@@ -1,31 +1,27 @@
 import os
 import requests
-import json
-from datetime import datetime, date
+from datetime import datetime, date, timedelta
 import re
 
 # ─── CONFIG ───────────────────────────────────────────────
-METABASE_URL = os.environ["METABASE_URL"]
-METABASE_EMAIL = os.environ["METABASE_EMAIL"]
-METABASE_PASSWORD = os.environ["METABASE_PASSWORD"]
-SUPABASE_URL = os.environ["SUPABASE_URL"]
-SUPABASE_KEY = os.environ["SUPABASE_KEY"]
-
-QUESTIONS = {
-    "dispatched":      1684,
-    "consumed":        1683,
-    "delivery_proofs": 1673,
-    "delivered":       1687,
-    "stock_12h30":     1682,
-    "stock_6h":        1682,
-}
+METABASE_URL = os.environ["METABASE_URL"].strip()
+METABASE_EMAIL = os.environ["METABASE_EMAIL"].strip()
+METABASE_PASSWORD = os.environ["METABASE_PASSWORD"].strip()
+SUPABASE_URL = os.environ["SUPABASE_URL"].strip()
+SUPABASE_KEY = os.environ["SUPABASE_KEY"].strip()
 
 FRENCH_MONTHS = {
     "janvier":1,"février":2,"mars":3,"avril":4,"mai":5,"juin":6,
     "juillet":7,"août":8,"septembre":9,"octobre":10,"novembre":11,"décembre":12
 }
-
 FRENCH_DAYS = ["lundi","mardi","mercredi","jeudi","vendredi","samedi","dimanche"]
+
+# Période de synchronisation : 90 derniers jours
+END_DATE = date.today()
+START_DATE = END_DATE - timedelta(days=90)
+DATE_RANGE = f"{START_DATE}~{END_DATE}"
+
+print(f"📅 Période : {START_DATE} → {END_DATE}")
 
 # ─── HELPERS ──────────────────────────────────────────────
 
@@ -62,7 +58,10 @@ def parse_french_date(s):
 def parse_number(s):
     if s is None or s == "":
         return None
-    return float(str(s).replace(",", "."))
+    try:
+        return float(str(s).replace(",", "."))
+    except:
+        return None
 
 def iso_week(dt):
     if not dt:
@@ -93,9 +92,9 @@ def supabase_headers():
 
 def upsert(table, rows):
     if not rows:
-        print(f"  Aucune ligne à insérer dans {table}")
+        print(f"  Aucune ligne pour {table}")
         return
-    batch_size = 500
+    batch_size = 200
     total = 0
     for i in range(0, len(rows), batch_size):
         batch = rows[i:i+batch_size]
@@ -105,43 +104,63 @@ def upsert(table, rows):
             json=batch
         )
         if r.status_code not in [200, 201]:
-            print(f"  ❌ Erreur Supabase {table}: {r.status_code} {r.text[:200]}")
-        else:
-            total += len(batch)
+            print(f"  ❌ Erreur Supabase {table}: {r.status_code} {r.text[:300]}")
+            return
+        total += len(batch)
     print(f"  ✅ {total} lignes insérées dans {table}")
 
 def log_import(data_type, row_count, status="success"):
-    upsert("import_logs", [{
-        "data_type": data_type,
-        "imported_at": datetime.utcnow().isoformat(),
-        "row_count": row_count,
-        "status": status
-    }])
+    r = requests.post(
+        f"{SUPABASE_URL}/rest/v1/import_logs",
+        headers=supabase_headers(),
+        json=[{
+            "data_type": data_type,
+            "imported_at": datetime.utcnow().isoformat(),
+            "row_count": row_count,
+            "status": status
+        }]
+    )
+    if r.status_code not in [200, 201]:
+        print(f"  ⚠️  Log non enregistré: {r.status_code} {r.text[:100]}")
 
-# ─── METABASE AUTH ────────────────────────────────────────
+# ─── METABASE ─────────────────────────────────────────────
 
 def metabase_token():
     print("🔐 Connexion à Metabase...")
     r = requests.post(
         f"{METABASE_URL}/api/session",
-        json={"username": METABASE_EMAIL, "password": METABASE_PASSWORD}
+        json={"username": METABASE_EMAIL, "password": METABASE_PASSWORD},
+        timeout=30
     )
     r.raise_for_status()
     token = r.json()["id"]
-    print("  ✅ Connecté à Metabase")
+    print("  ✅ Connecté")
     return token
 
-def fetch_question(token, question_id, params=None):
+def fetch_question(token, question_id, extra_params=None):
     headers = {"X-Metabase-Session": token, "Content-Type": "application/json"}
-    body = {"parameters": params or []}
+    params = [
+        {"type": "date/range", "target": ["variable", ["template-tag", "Date"]], "value": DATE_RANGE},
+        {"type": "date/range", "target": ["variable", ["template-tag", "DATE"]], "value": DATE_RANGE},
+        {"type": "date/range", "target": ["variable", ["template-tag", "DATE_RANGE"]], "value": DATE_RANGE},
+    ]
+    if extra_params:
+        params += extra_params
+
     r = requests.post(
         f"{METABASE_URL}/api/card/{question_id}/query/json",
         headers=headers,
-        json=body,
-        timeout=120
+        json={"parameters": params},
+        timeout=300
     )
-    r.raise_for_status()
-    return r.json()
+    if r.status_code != 200:
+        print(f"  ❌ Erreur Metabase {question_id}: {r.status_code} {r.text[:200]}")
+        return []
+    try:
+        return r.json()
+    except Exception as e:
+        print(f"  ❌ Erreur parsing JSON question {question_id}: {e}")
+        return []
 
 # ─── TRANSFORMATIONS ──────────────────────────────────────
 
@@ -152,8 +171,8 @@ def transform_dispatched(rows):
         cat = r.get("catégorie") or r.get("categorie") or ""
         pname = r.get("nom du produit") or ""
         cat2 = category2(pname, cat)
-        qty = int(parse_number(r.get("Quantités dispatchées") or r.get("quantites_dispatches") or 0) or 0)
-        cost = parse_number(r.get("PA Produit") or r.get("pa_produit"))
+        qty = int(parse_number(r.get("Quantités dispatchées") or 0) or 0)
+        cost = parse_number(r.get("PA Produit"))
         out.append({
             "date": dt.date().isoformat() if dt else None,
             "site": r.get("Emplacement") or r.get("emplacement"),
@@ -177,9 +196,9 @@ def transform_consumed(rows):
         pname = r.get("Nom du produit") or r.get("nom du produit") or ""
         cat2 = category2(pname, cat)
         qty = int(parse_number(r.get("Nombre de consommations") or 0) or 0)
-        cost = parse_number(r.get("PA Produit") or r.get("pa_produit"))
+        cost = parse_number(r.get("PA Produit"))
         out.append({
-            "week_number": int(r.get("n° semaine") or r.get("semaine") or iso_week(dt) or 0),
+            "week_number": int(parse_number(r.get("n° semaine") or iso_week(dt) or 0) or 0),
             "date": dt.date().isoformat() if dt else None,
             "site": r.get("Emplacement") or r.get("emplacement"),
             "product_name": pname,
@@ -199,15 +218,15 @@ def transform_delivered(rows):
     for r in rows:
         dt = parse_french_date(r.get("date de livraison"))
         dlc = parse_french_date(r.get("DLC") or r.get("dlc"))
-        cat = r.get("catégorie du produit") or r.get("categorie_du_produit") or ""
+        cat = r.get("catégorie du produit") or ""
         pname = r.get("nom du produit") or ""
         cat2 = category2(pname, cat)
         qty = int(parse_number(r.get("nombre de produit livré détecté") or 0) or 0)
-        cost = parse_number(r.get("PA Produit") or r.get("pa_produit"))
+        cost = parse_number(r.get("PA Produit"))
         out.append({
             "delivery_date": dt.date().isoformat() if dt else None,
-            "site_name": r.get("nom de l'emplacement") or r.get("nom_emplacement"),
-            "fridge_name": r.get("nom du frigo") or r.get("nom_frigo"),
+            "site_name": r.get("nom de l'emplacement"),
+            "fridge_name": r.get("nom du frigo"),
             "product_category": cat,
             "unit_cost": cost,
             "product_name": pname,
@@ -222,18 +241,18 @@ def transform_delivered(rows):
         })
     return out
 
-def transform_stock(rows, label):
+def transform_stock(rows):
     out = []
     for r in rows:
         ts = parse_french_date(r.get("instant_t"))
         dlc = parse_french_date(r.get("dlc") or r.get("DLC"))
-        cat = r.get("Catégorie du produit") or r.get("categorie_du_produit") or ""
-        pname = r.get("Nom du produit") or r.get("nom_du_produit") or ""
+        cat = r.get("Catégorie du produit") or ""
+        pname = r.get("Nom du produit") or ""
         cat2 = category2(pname, cat)
-        qty = int(parse_number(r.get("nombre de produit") or r.get("nombre_de_produit") or 0) or 0)
+        qty = int(parse_number(r.get("nombre de produit") or 0) or 0)
         out.append({
             "timestamp": ts.isoformat() if ts else None,
-            "site": r.get("Nom de l'emplacement") or r.get("nom_emplacement"),
+            "site": r.get("Nom de l'emplacement"),
             "category": cat,
             "product_name": pname,
             "quantity": qty,
@@ -263,84 +282,88 @@ def transform_proofs(rows):
 # ─── MAIN ─────────────────────────────────────────────────
 
 def main():
-    print("🚀 Démarrage de la synchronisation Metabase → Supabase")
-    print(f"   {datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')} UTC")
-    print()
+    print("🚀 Démarrage synchronisation Metabase → Supabase")
+    print(f"   {datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')} UTC\n")
 
     token = metabase_token()
 
-    # ── Dispatché ──
-    print("📦 Récupération Dispatché...")
+    # Dispatché
+    print("📦 Dispatché...")
     try:
-        rows = fetch_question(token, QUESTIONS["dispatched"])
+        rows = fetch_question(token, 1684)
+        print(f"  {len(rows)} lignes reçues")
         data = transform_dispatched(rows)
         upsert("dispatched", data)
         log_import("dispatched", len(data))
     except Exception as e:
-        print(f"  ❌ Erreur Dispatché: {e}")
+        print(f"  ❌ {e}")
         log_import("dispatched", 0, "error")
 
-    # ── Consommé ──
-    print("🍽️  Récupération Consommé...")
+    # Consommé
+    print("🍽️  Consommé...")
     try:
-        rows = fetch_question(token, QUESTIONS["consumed"])
+        rows = fetch_question(token, 1683)
+        print(f"  {len(rows)} lignes reçues")
         data = transform_consumed(rows)
         upsert("consumed", data)
         log_import("consumed", len(data))
     except Exception as e:
-        print(f"  ❌ Erreur Consommé: {e}")
+        print(f"  ❌ {e}")
         log_import("consumed", 0, "error")
 
-    # ── Livré ──
-    print("🚚 Récupération Livré...")
+    # Livré
+    print("🚚 Livré...")
     try:
-        rows = fetch_question(token, QUESTIONS["delivered"])
+        rows = fetch_question(token, 1687)
+        print(f"  {len(rows)} lignes reçues")
         data = transform_delivered(rows)
         upsert("delivered", data)
         log_import("delivered", len(data))
     except Exception as e:
-        print(f"  ❌ Erreur Livré: {e}")
+        print(f"  ❌ {e}")
         log_import("delivered", 0, "error")
 
-    # ── Stock 12h30 ──
-    print("📊 Récupération Stock 12h30...")
+    # Stock 12h30
+    print("📊 Stock 12h30...")
     try:
-        rows = fetch_question(token, QUESTIONS["stock_12h30"], params=[
-            {"type": "category", "target": ["variable", ["template-tag", "HEURE"]], "value": "12:31"},
+        rows = fetch_question(token, 1682, extra_params=[
+            {"type": "category", "target": ["variable", ["template-tag", "HEURE"]], "value": "12:31"}
         ])
-        data = transform_stock(rows, "12h30")
+        print(f"  {len(rows)} lignes reçues")
+        data = transform_stock(rows)
         upsert("stock_12h30", data)
         log_import("stock_12h30", len(data))
     except Exception as e:
-        print(f"  ❌ Erreur Stock 12h30: {e}")
+        print(f"  ❌ {e}")
         log_import("stock_12h30", 0, "error")
 
-    # ── Stock 6h ──
-    print("📊 Récupération Stock 6h...")
+    # Stock 6h
+    print("📊 Stock 6h...")
     try:
-        rows = fetch_question(token, QUESTIONS["stock_6h"], params=[
-            {"type": "category", "target": ["variable", ["template-tag", "HEURE"]], "value": "06:01"},
+        rows = fetch_question(token, 1682, extra_params=[
+            {"type": "category", "target": ["variable", ["template-tag", "HEURE"]], "value": "06:01"}
         ])
-        data = transform_stock(rows, "6h")
+        print(f"  {len(rows)} lignes reçues")
+        data = transform_stock(rows)
         upsert("stock_6h", data)
         log_import("stock_6h", len(data))
     except Exception as e:
-        print(f"  ❌ Erreur Stock 6h: {e}")
+        print(f"  ❌ {e}")
         log_import("stock_6h", 0, "error")
 
-    # ── Preuves de livraison ──
-    print("📸 Récupération Preuves de livraison...")
+    # Preuves de livraison
+    print("📸 Preuves livraison...")
     try:
-        rows = fetch_question(token, QUESTIONS["delivery_proofs"])
+        rows = fetch_question(token, 1673)
+        print(f"  {len(rows)} lignes reçues")
         data = transform_proofs(rows)
         upsert("delivery_proofs", data)
         log_import("delivery_proofs", len(data))
     except Exception as e:
-        print(f"  ❌ Erreur Preuves: {e}")
+        print(f"  ❌ {e}")
         log_import("delivery_proofs", 0, "error")
 
-    print()
-    print("✅ Synchronisation terminée !")
+    print("\n✅ Synchronisation terminée !")
 
 if __name__ == "__main__":
     main()
