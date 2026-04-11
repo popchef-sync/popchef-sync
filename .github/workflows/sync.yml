@@ -1,0 +1,31 @@
+name: Sync Metabase vers Supabase
+
+on:
+  schedule:
+    - cron: '0 3 * * *'  # Chaque nuit à 3h du matin (UTC)
+  workflow_dispatch:       # Permet de lancer manuellement depuis GitHub
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Récupérer le code
+        uses: actions/checkout@v4
+
+      - name: Installer Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Installer les dépendances
+        run: pip install requests
+
+      - name: Lancer la synchronisation
+        env:
+          METABASE_URL: ${{ secrets.METABASE_URL }}
+          METABASE_EMAIL: ${{ secrets.METABASE_EMAIL }}
+          METABASE_PASSWORD: ${{ secrets.METABASE_PASSWORD }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+        run: python sync.py
