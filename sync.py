@@ -10,6 +10,11 @@ METABASE_PASSWORD = os.environ["METABASE_PASSWORD"].strip()
 SUPABASE_URL = os.environ["SUPABASE_URL"].strip()
 SUPABASE_KEY = os.environ["SUPABASE_KEY"].strip()
 
+# Période : 90 derniers jours
+END_DATE = date.today()
+START_DATE = END_DATE - timedelta(days=90)
+print(f"📅 Période : {START_DATE} → {END_DATE}")
+
 FRENCH_MONTHS = {
     "janvier":1,"février":2,"mars":3,"avril":4,"mai":5,"juin":6,
     "juillet":7,"août":8,"septembre":9,"octobre":10,"novembre":11,"décembre":12
@@ -44,6 +49,12 @@ def parse_french_date(s):
         month = FRENCH_MONTHS.get(month_str.lower())
         if month:
             return datetime(int(year), month, int(day))
+
+    # Format ISO: 2026-01-01
+    m = re.match(r"(\d{4})-(\d{2})-(\d{2})", s)
+    if m:
+        year, month, day = m.groups()
+        return datetime(int(year), int(month), int(day))
 
     print(f"  ⚠️  Date non reconnue : {s}")
     return None
@@ -128,10 +139,9 @@ def metabase_token():
     print("  ✅ Connecté")
     return token
 
-def fetch_question(token, question_id, extra_params=None):
-    """Récupère les données sans filtre de date — on prend tout"""
+def fetch_question(token, question_id, params):
+    """Récupère les données d'une question Metabase avec les bons paramètres"""
     headers = {"X-Metabase-Session": token, "Content-Type": "application/json"}
-    params = extra_params or []
     r = requests.post(
         f"{METABASE_URL}/api/card/{question_id}/query/json",
         headers=headers,
@@ -145,12 +155,73 @@ def fetch_question(token, question_id, extra_params=None):
         data = r.json()
         if isinstance(data, list):
             return data
-        else:
-            print(f"  ❌ Réponse inattendue: {str(data)[:200]}")
-            return []
+        print(f"  ❌ Réponse inattendue: {str(data)[:200]}")
+        return []
     except Exception as e:
         print(f"  ❌ Erreur JSON question {question_id}: {e}")
         return []
+
+# ─── PARAMÈTRES METABASE PAR QUESTION ─────────────────────
+
+def params_dispatche():
+    """Question 1684 - paramètres: Date, CANTINE, CATEGORIE"""
+    return [
+        {
+            "type": "date/range",
+            "target": ["dimension", ["template-tag", "Date"]],
+            "value": f"{START_DATE}~{END_DATE}"
+        }
+    ]
+
+def params_consos():
+    """Question 1683 - paramètres: DATE, EMPLACEMENT, CATEGORIE"""
+    return [
+        {
+            "type": "date/range",
+            "target": ["dimension", ["template-tag", "DATE"]],
+            "value": f"{START_DATE}~{END_DATE}"
+        }
+    ]
+
+def params_images():
+    """Question 1673 - paramètres: Date, CANTINE"""
+    return [
+        {
+            "type": "date/range",
+            "target": ["dimension", ["template-tag", "Date"]],
+            "value": f"{START_DATE}~{END_DATE}"
+        }
+    ]
+
+def params_livraison():
+    """Question 1687 - paramètres: DATE, FRIGO"""
+    return [
+        {
+            "type": "date/range",
+            "target": ["dimension", ["template-tag", "DATE"]],
+            "value": f"{START_DATE}~{END_DATE}"
+        }
+    ]
+
+def params_stock(heure):
+    """Question 1682 - paramètres: DATE_RANGE.start, DATE_RANGE.end, HEURE, EMPLACEMENT"""
+    return [
+        {
+            "type": "date/single",
+            "target": ["dimension", ["template-tag", "DATE_RANGE.start"]],
+            "value": str(START_DATE)
+        },
+        {
+            "type": "date/single",
+            "target": ["dimension", ["template-tag", "DATE_RANGE.end"]],
+            "value": str(END_DATE)
+        },
+        {
+            "type": "category",
+            "target": ["variable", ["template-tag", "HEURE"]],
+            "value": heure
+        }
+    ]
 
 # ─── TRANSFORMATIONS ──────────────────────────────────────
 
@@ -234,7 +305,7 @@ def transform_delivered(rows):
 def transform_stock(rows):
     out = []
     for r in rows:
-        ts = parse_french_date(r.get("instant_t"))
+        ts = parse_french_date(r.get("instant_T") or r.get("instant_t"))
         dlc = parse_french_date(r.get("dlc") or r.get("DLC"))
         cat = r.get("Catégorie du produit") or ""
         pname = r.get("Nom du produit") or ""
@@ -278,9 +349,9 @@ def main():
     token = metabase_token()
 
     # Dispatché
-    print("📦 Dispatché...")
+    print("📦 Dispatché (question 1684)...")
     try:
-        rows = fetch_question(token, 1684)
+        rows = fetch_question(token, 1684, params_dispatche())
         print(f"  {len(rows)} lignes reçues")
         data = transform_dispatched(rows)
         upsert("dispatched", data)
@@ -290,9 +361,9 @@ def main():
         log_import("dispatched", 0, "error")
 
     # Consommé
-    print("🍽️  Consommé...")
+    print("🍽️  Consommé (question 1683)...")
     try:
-        rows = fetch_question(token, 1683)
+        rows = fetch_question(token, 1683, params_consos())
         print(f"  {len(rows)} lignes reçues")
         data = transform_consumed(rows)
         upsert("consumed", data)
@@ -302,9 +373,9 @@ def main():
         log_import("consumed", 0, "error")
 
     # Livré
-    print("🚚 Livré...")
+    print("🚚 Livré (question 1687)...")
     try:
-        rows = fetch_question(token, 1687)
+        rows = fetch_question(token, 1687, params_livraison())
         print(f"  {len(rows)} lignes reçues")
         data = transform_delivered(rows)
         upsert("delivered", data)
@@ -314,11 +385,9 @@ def main():
         log_import("delivered", 0, "error")
 
     # Stock 12h30
-    print("📊 Stock 12h30...")
+    print("📊 Stock 12h30 (question 1682)...")
     try:
-        rows = fetch_question(token, 1682, extra_params=[
-            {"type": "category", "target": ["variable", ["template-tag", "HEURE"]], "value": "12:31"}
-        ])
+        rows = fetch_question(token, 1682, params_stock("12:31"))
         print(f"  {len(rows)} lignes reçues")
         data = transform_stock(rows)
         upsert("stock_12h30", data)
@@ -328,11 +397,9 @@ def main():
         log_import("stock_12h30", 0, "error")
 
     # Stock 6h
-    print("📊 Stock 6h...")
+    print("📊 Stock 6h (question 1682)...")
     try:
-        rows = fetch_question(token, 1682, extra_params=[
-            {"type": "category", "target": ["variable", ["template-tag", "HEURE"]], "value": "06:01"}
-        ])
+        rows = fetch_question(token, 1682, params_stock("06:01"))
         print(f"  {len(rows)} lignes reçues")
         data = transform_stock(rows)
         upsert("stock_6h", data)
@@ -342,9 +409,9 @@ def main():
         log_import("stock_6h", 0, "error")
 
     # Preuves de livraison
-    print("📸 Preuves livraison...")
+    print("📸 Preuves livraison (question 1673)...")
     try:
-        rows = fetch_question(token, 1673)
+        rows = fetch_question(token, 1673, params_images())
         print(f"  {len(rows)} lignes reçues")
         data = transform_proofs(rows)
         upsert("delivery_proofs", data)
