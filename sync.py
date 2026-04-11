@@ -16,13 +16,6 @@ FRENCH_MONTHS = {
 }
 FRENCH_DAYS = ["lundi","mardi","mercredi","jeudi","vendredi","samedi","dimanche"]
 
-# Période de synchronisation : 90 derniers jours
-END_DATE = date.today()
-START_DATE = END_DATE - timedelta(days=90)
-DATE_RANGE = f"{START_DATE}~{END_DATE}"
-
-print(f"📅 Période : {START_DATE} → {END_DATE}")
-
 # ─── HELPERS ──────────────────────────────────────────────
 
 def parse_french_date(s):
@@ -110,7 +103,7 @@ def upsert(table, rows):
     print(f"  ✅ {total} lignes insérées dans {table}")
 
 def log_import(data_type, row_count, status="success"):
-    r = requests.post(
+    requests.post(
         f"{SUPABASE_URL}/rest/v1/import_logs",
         headers=supabase_headers(),
         json=[{
@@ -120,8 +113,6 @@ def log_import(data_type, row_count, status="success"):
             "status": status
         }]
     )
-    if r.status_code not in [200, 201]:
-        print(f"  ⚠️  Log non enregistré: {r.status_code} {r.text[:100]}")
 
 # ─── METABASE ─────────────────────────────────────────────
 
@@ -138,15 +129,9 @@ def metabase_token():
     return token
 
 def fetch_question(token, question_id, extra_params=None):
+    """Récupère les données sans filtre de date — on prend tout"""
     headers = {"X-Metabase-Session": token, "Content-Type": "application/json"}
-    params = [
-        {"type": "date/range", "target": ["variable", ["template-tag", "Date"]], "value": DATE_RANGE},
-        {"type": "date/range", "target": ["variable", ["template-tag", "DATE"]], "value": DATE_RANGE},
-        {"type": "date/range", "target": ["variable", ["template-tag", "DATE_RANGE"]], "value": DATE_RANGE},
-    ]
-    if extra_params:
-        params += extra_params
-
+    params = extra_params or []
     r = requests.post(
         f"{METABASE_URL}/api/card/{question_id}/query/json",
         headers=headers,
@@ -154,12 +139,17 @@ def fetch_question(token, question_id, extra_params=None):
         timeout=300
     )
     if r.status_code != 200:
-        print(f"  ❌ Erreur Metabase {question_id}: {r.status_code} {r.text[:200]}")
+        print(f"  ❌ Erreur Metabase {question_id}: {r.status_code} {r.text[:300]}")
         return []
     try:
-        return r.json()
+        data = r.json()
+        if isinstance(data, list):
+            return data
+        else:
+            print(f"  ❌ Réponse inattendue: {str(data)[:200]}")
+            return []
     except Exception as e:
-        print(f"  ❌ Erreur parsing JSON question {question_id}: {e}")
+        print(f"  ❌ Erreur JSON question {question_id}: {e}")
         return []
 
 # ─── TRANSFORMATIONS ──────────────────────────────────────
