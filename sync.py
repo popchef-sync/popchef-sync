@@ -204,16 +204,16 @@ def params_livraison():
     ]
 
 def params_stock(heure):
-    """Question 1682 - paramètres: DATE_RANGE.start, DATE_RANGE.end, HEURE, EMPLACEMENT"""
+    """Question 1682 - DATE_RANGE.start et DATE_RANGE.end sont des paramètres SQL natifs"""
     return [
         {
             "type": "date/single",
-            "target": ["dimension", ["template-tag", "DATE_RANGE.start"]],
+            "target": ["variable", ["template-tag", "DATE_RANGE.start"]],
             "value": str(START_DATE)
         },
         {
             "type": "date/single",
-            "target": ["dimension", ["template-tag", "DATE_RANGE.end"]],
+            "target": ["variable", ["template-tag", "DATE_RANGE.end"]],
             "value": str(END_DATE)
         },
         {
