@@ -98,20 +98,38 @@ def upsert(table, rows):
     if not rows:
         print(f"  Aucune ligne pour {table}")
         return
-    batch_size = 200
+    batch_size = 500
     total = 0
     for i in range(0, len(rows), batch_size):
         batch = rows[i:i+batch_size]
         r = requests.post(
             f"{SUPABASE_URL}/rest/v1/{table}",
-            headers=supabase_headers(),
+            headers={
+                "apikey": SUPABASE_KEY,
+                "Authorization": f"Bearer {SUPABASE_KEY}",
+                "Content-Type": "application/json",
+                "Prefer": "return=minimal"
+            },
             json=batch
         )
         if r.status_code not in [200, 201]:
             print(f"  ❌ Erreur Supabase {table}: {r.status_code} {r.text[:300]}")
             return
         total += len(batch)
+        print(f"  ... {total}/{len(rows)}")
     print(f"  ✅ {total} lignes insérées dans {table}")
+
+def truncate(table):
+    r = requests.post(
+        f"{SUPABASE_URL}/rest/v1/rpc/truncate_table",
+        headers={
+            "apikey": SUPABASE_KEY,
+            "Authorization": f"Bearer {SUPABASE_KEY}",
+            "Content-Type": "application/json"
+        },
+        json={"table_name": table}
+    )
+    print(f"  Table {table} vidée")
 
 def log_import(data_type, row_count, status="success"):
     requests.post(
