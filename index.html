@@ -3,205 +3,207 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Dashboard Livraison & Gâchis</title>
-<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<title>Dashboard Livraison & Gâchis — Popchef</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #0f1117;
-    --surface: #1a1d27;
-    --surface2: #22263a;
-    --border: #2e3250;
-    --accent: #4f6ef7;
-    --accent2: #7c3aed;
-    --green: #22c55e;
-    --orange: #f97316;
-    --red: #ef4444;
-    --text: #e2e8f0;
-    --muted: #64748b;
-    --mono: 'DM Mono', monospace;
-    --sans: 'DM Sans', sans-serif;
+    --aubergine: #631248;
+    --aubergine-light: #7d1a5c;
+    --aubergine-dark: #4a0d36;
+    --beurre: #FCF7E2;
+    --beurre-dark: #f0e8c4;
+    --epinard: #074741;
+    --tangerine: #EE3932;
+    --fusain: #212721;
+    --blanc: #ffffff;
+    --text: #212721;
+    --muted: #7a6e6e;
+    --border: rgba(99,18,72,0.15);
+    --sans: 'Montserrat', sans-serif;
+    --mono: 'IBM Plex Mono', monospace;
   }
  
   * { margin: 0; padding: 0; box-sizing: border-box; }
  
   body {
-    background: var(--bg);
+    background: var(--beurre);
     color: var(--text);
     font-family: var(--sans);
-    font-size: 14px;
+    font-size: 13px;
     min-height: 100vh;
   }
  
   /* HEADER */
   .header {
-    background: var(--surface);
-    border-bottom: 1px solid var(--border);
-    padding: 16px 24px;
+    background: var(--aubergine);
+    padding: 0 32px;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    position: sticky;
-    top: 0;
-    z-index: 100;
+    height: 60px;
   }
  
   .header-left {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 16px;
   }
  
-  .logo {
-    width: 32px;
-    height: 32px;
-    background: linear-gradient(135deg, var(--accent), var(--accent2));
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 16px;
+  .logo-text {
+    font-family: var(--sans);
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--beurre);
+    letter-spacing: -0.5px;
+    text-transform: uppercase;
   }
  
-  .title {
-    font-size: 16px;
-    font-weight: 600;
-    letter-spacing: -0.3px;
+  .logo-text span {
+    font-weight: 300;
   }
  
-  .subtitle {
-    font-size: 12px;
-    color: var(--muted);
+  .header-divider {
+    width: 1px;
+    height: 24px;
+    background: rgba(252,247,226,0.3);
+  }
+ 
+  .header-subtitle {
+    font-size: 11px;
+    font-weight: 500;
+    color: rgba(252,247,226,0.7);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
     font-family: var(--mono);
   }
  
-  .sync-info {
-    font-size: 12px;
-    color: var(--muted);
-    font-family: var(--mono);
+  .sync-badge {
     display: flex;
     align-items: center;
     gap: 6px;
+    background: rgba(252,247,226,0.1);
+    border: 1px solid rgba(252,247,226,0.2);
+    border-radius: 20px;
+    padding: 4px 12px;
+    font-size: 11px;
+    color: rgba(252,247,226,0.8);
+    font-family: var(--mono);
   }
  
   .sync-dot {
     width: 6px;
     height: 6px;
-    background: var(--green);
+    background: #22c55e;
     border-radius: 50%;
     animation: pulse 2s infinite;
   }
  
-  @keyframes pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.3; }
-  }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
  
   /* TABS */
   .tabs {
-    background: var(--surface);
-    border-bottom: 1px solid var(--border);
-    padding: 0 24px;
+    background: var(--aubergine-dark);
+    padding: 0 32px;
     display: flex;
     gap: 0;
+    border-bottom: 1px solid rgba(252,247,226,0.1);
   }
  
   .tab {
     padding: 12px 20px;
-    font-size: 13px;
-    font-weight: 500;
-    color: var(--muted);
+    font-size: 12px;
+    font-weight: 600;
+    color: rgba(252,247,226,0.5);
     cursor: pointer;
     border-bottom: 2px solid transparent;
     transition: all 0.2s;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
   }
  
   .tab.active {
-    color: var(--accent);
-    border-bottom-color: var(--accent);
+    color: var(--beurre);
+    border-bottom-color: var(--beurre);
   }
  
-  .tab:hover:not(.active) {
-    color: var(--text);
-  }
+  .tab:hover:not(.active) { color: rgba(252,247,226,0.8); }
  
   /* FILTERS */
   .filters {
-    background: var(--surface);
-    border-bottom: 1px solid var(--border);
-    padding: 12px 24px;
+    background: var(--blanc);
+    border-bottom: 2px solid var(--border);
+    padding: 14px 32px;
     display: flex;
     align-items: center;
-    gap: 16px;
+    gap: 24px;
     flex-wrap: wrap;
   }
  
   .filter-group {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
   }
  
   .filter-label {
-    font-size: 11px;
-    font-weight: 600;
-    color: var(--muted);
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--aubergine);
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+    letter-spacing: 1.5px;
     font-family: var(--mono);
   }
  
   .filter-select {
-    background: var(--surface2);
-    border: 1px solid var(--border);
+    background: var(--beurre);
+    border: 1.5px solid var(--border);
     color: var(--text);
-    padding: 6px 12px;
-    border-radius: 6px;
-    font-size: 13px;
+    padding: 7px 14px;
+    border-radius: 4px;
+    font-size: 12px;
     font-family: var(--sans);
+    font-weight: 600;
     cursor: pointer;
     outline: none;
     transition: border-color 0.2s;
-    min-width: 200px;
+    min-width: 220px;
   }
  
-  .filter-select:focus {
-    border-color: var(--accent);
-  }
+  .filter-select:focus { border-color: var(--aubergine); }
  
   /* CONTENT */
-  .content {
-    padding: 24px;
-    overflow-x: auto;
-  }
+  .content { padding: 28px 32px; overflow-x: auto; }
  
   /* LOADING */
   .loading {
     display: flex;
     align-items: center;
     justify-content: center;
-    height: 200px;
+    height: 300px;
     color: var(--muted);
-    gap: 10px;
+    gap: 12px;
     font-family: var(--mono);
     font-size: 13px;
   }
  
   .spinner {
-    width: 20px;
-    height: 20px;
+    width: 22px;
+    height: 22px;
     border: 2px solid var(--border);
-    border-top-color: var(--accent);
+    border-top-color: var(--aubergine);
     border-radius: 50%;
     animation: spin 0.8s linear infinite;
   }
  
   @keyframes spin { to { transform: rotate(360deg); } }
  
-  /* WEEKLY TABLE */
+  /* TABLE */
   .table-wrapper {
     overflow-x: auto;
-    border-radius: 10px;
-    border: 1px solid var(--border);
+    border-radius: 8px;
+    border: 1.5px solid var(--border);
+    box-shadow: 0 2px 12px rgba(99,18,72,0.08);
+    background: var(--blanc);
   }
  
   table {
@@ -211,183 +213,187 @@
   }
  
   th, td {
-    padding: 8px 12px;
+    padding: 9px 14px;
     text-align: right;
     white-space: nowrap;
     border-bottom: 1px solid var(--border);
+    font-size: 12px;
   }
  
   th:first-child, td:first-child {
     text-align: left;
     position: sticky;
     left: 0;
-    background: var(--surface);
+    background: var(--blanc);
     z-index: 10;
-    min-width: 200px;
-    font-weight: 500;
+    min-width: 210px;
+    font-weight: 600;
   }
  
   thead th {
-    background: var(--surface2);
+    background: var(--aubergine);
+    color: var(--beurre);
     font-family: var(--mono);
     font-size: 11px;
     font-weight: 500;
-    color: var(--muted);
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    border-bottom: 2px solid var(--border);
+    border-bottom: none;
   }
  
-  thead th:first-child {
-    background: var(--surface2);
-  }
+  thead th:first-child { background: var(--aubergine); color: var(--beurre); }
  
-  tbody tr:hover td {
-    background: rgba(79, 110, 247, 0.05);
-  }
- 
-  tbody tr:hover td:first-child {
-    background: rgba(79, 110, 247, 0.08);
-  }
+  tbody tr:last-child td { border-bottom: none; }
+  tbody tr:hover td { background: rgba(99,18,72,0.03); }
+  tbody tr:hover td:first-child { background: rgba(99,18,72,0.05); }
  
   /* SECTION ROWS */
   .row-section td {
-    background: var(--surface2) !important;
-    color: var(--accent);
+    background: var(--aubergine) !important;
+    color: var(--beurre) !important;
     font-size: 10px;
     font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 1px;
+    letter-spacing: 1.5px;
     font-family: var(--mono);
-    padding: 6px 12px;
-    border-top: 2px solid var(--border);
-  }
- 
-  .row-section td:first-child {
-    background: var(--surface2) !important;
+    padding: 5px 14px;
+    border-bottom: none;
   }
  
   /* GACHIS ROWS */
   .row-gachis td {
-    background: rgba(239, 68, 68, 0.05) !important;
-    font-weight: 600;
+    background: rgba(99,18,72,0.06) !important;
+    font-weight: 700;
   }
  
   .row-gachis td:first-child {
-    background: rgba(239, 68, 68, 0.08) !important;
-    color: var(--red);
+    background: rgba(99,18,72,0.08) !important;
+    color: var(--aubergine);
   }
  
-  /* BADGES */
-  .badge-green { color: var(--green); }
-  .badge-orange { color: var(--orange); }
-  .badge-red { color: var(--red); }
+  /* COLORS */
+  .c-green { color: #15803d; font-weight: 700; }
+  .c-orange { color: #c2410c; font-weight: 700; }
+  .c-red { color: var(--tangerine); font-weight: 700; }
  
-  /* DAILY VIEW */
-  .daily-controls {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 20px;
-  }
- 
-  .week-nav {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 4px;
-  }
- 
-  .week-btn {
-    background: none;
-    border: none;
-    color: var(--muted);
-    cursor: pointer;
-    padding: 4px 10px;
-    border-radius: 6px;
-    font-size: 16px;
-    transition: all 0.2s;
-  }
- 
-  .week-btn:hover {
-    background: var(--border);
-    color: var(--text);
-  }
- 
-  .week-label {
-    font-family: var(--mono);
-    font-size: 13px;
-    font-weight: 500;
-    padding: 4px 8px;
-    min-width: 80px;
-    text-align: center;
-  }
- 
-  /* ERROR */
-  .error-box {
-    background: rgba(239, 68, 68, 0.1);
-    border: 1px solid rgba(239, 68, 68, 0.3);
-    border-radius: 8px;
-    padding: 16px;
-    color: var(--red);
-    font-family: var(--mono);
-    font-size: 12px;
-    margin: 20px 0;
-  }
- 
-  /* STATS CARDS */
+  /* STAT CARDS */
   .stats-row {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     gap: 16px;
     margin-bottom: 24px;
   }
  
   .stat-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 16px;
+    background: var(--blanc);
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(99,18,72,0.06);
+  }
+ 
+  .stat-card.highlight {
+    background: var(--aubergine);
+    border-color: var(--aubergine);
   }
  
   .stat-label {
-    font-size: 11px;
+    font-size: 10px;
     color: var(--muted);
     font-family: var(--mono);
     text-transform: uppercase;
-    letter-spacing: 0.5px;
-    margin-bottom: 8px;
+    letter-spacing: 1px;
+    margin-bottom: 10px;
+    font-weight: 500;
   }
  
+  .stat-card.highlight .stat-label { color: rgba(252,247,226,0.6); }
+ 
   .stat-value {
-    font-size: 24px;
-    font-weight: 600;
-    font-family: var(--mono);
+    font-size: 28px;
+    font-weight: 800;
     letter-spacing: -1px;
+    color: var(--aubergine);
+    font-family: var(--sans);
   }
+ 
+  .stat-card.highlight .stat-value { color: var(--beurre); }
  
   .stat-sub {
     font-size: 11px;
     color: var(--muted);
-    margin-top: 4px;
+    margin-top: 6px;
+    font-family: var(--mono);
   }
  
-  /* EMPTY STATE */
+  .stat-card.highlight .stat-sub { color: rgba(252,247,226,0.5); }
+ 
+  /* WEEK NAV */
+  .week-nav {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    background: var(--beurre);
+    border: 1.5px solid var(--border);
+    border-radius: 4px;
+    padding: 3px;
+  }
+ 
+  .week-btn {
+    background: none;
+    border: none;
+    color: var(--aubergine);
+    cursor: pointer;
+    padding: 4px 12px;
+    border-radius: 3px;
+    font-size: 16px;
+    font-weight: 700;
+    transition: all 0.15s;
+  }
+ 
+  .week-btn:hover { background: var(--aubergine); color: var(--beurre); }
+ 
+  .week-label {
+    font-family: var(--mono);
+    font-size: 13px;
+    font-weight: 700;
+    padding: 4px 10px;
+    min-width: 60px;
+    text-align: center;
+    color: var(--aubergine);
+  }
+ 
   .empty {
     text-align: center;
-    padding: 60px 20px;
+    padding: 80px 20px;
     color: var(--muted);
     font-family: var(--mono);
     font-size: 13px;
   }
  
-  .empty-icon { font-size: 40px; margin-bottom: 16px; }
+  .empty-icon { font-size: 48px; margin-bottom: 16px; }
  
-  /* HIDDEN */
   .hidden { display: none !important; }
+ 
+  .error-box {
+    background: rgba(238,57,50,0.08);
+    border: 1.5px solid rgba(238,57,50,0.3);
+    border-radius: 8px;
+    padding: 20px;
+    color: var(--tangerine);
+    font-family: var(--mono);
+    font-size: 12px;
+    margin: 20px 0;
+  }
+ 
+  /* FILTER CONTROLS ROW */
+  .filter-controls {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+  }
 </style>
 </head>
 <body>
@@ -395,13 +401,11 @@
 <!-- HEADER -->
 <div class="header">
   <div class="header-left">
-    <div class="logo">🧊</div>
-    <div>
-      <div class="title">Dashboard Livraison & Gâchis</div>
-      <div class="subtitle">Popchef · Frigos connectés</div>
-    </div>
+    <div class="logo-text"><span>POP</span>CHEF</div>
+    <div class="header-divider"></div>
+    <div class="header-subtitle">Dashboard Livraison & Gâchis</div>
   </div>
-  <div class="sync-info">
+  <div class="sync-badge">
     <div class="sync-dot"></div>
     <span id="syncInfo">Chargement...</span>
   </div>
@@ -416,13 +420,13 @@
 <!-- FILTERS -->
 <div class="filters">
   <div class="filter-group">
-    <span class="filter-label">CLIENT</span>
+    <span class="filter-label">Client :</span>
     <select class="filter-select" id="siteFilter" onchange="applyFilters()">
       <option value="all">Emplacement (tous)</option>
     </select>
   </div>
   <div class="filter-group">
-    <span class="filter-label">CATÉGORIE</span>
+    <span class="filter-label">Catégorie :</span>
     <select class="filter-select" id="catFilter" onchange="applyFilters()">
       <option value="EPD">TOTAL (EPD)</option>
       <option value="Dish">Dish</option>
@@ -432,7 +436,7 @@
     </select>
   </div>
   <div class="filter-group hidden" id="weekFilterGroup">
-    <span class="filter-label">SEMAINE</span>
+    <span class="filter-label">Semaine :</span>
     <div class="week-nav">
       <button class="week-btn" onclick="changeWeek(-1)">‹</button>
       <span class="week-label" id="weekLabel">S14</span>
@@ -447,12 +451,9 @@
 </div>
  
 <script>
-// ─── CONFIG ───────────────────────────────────────────────
 const SUPABASE_URL = 'https://nnwvovoxdejjxlxlqqjv.supabase.co';
-// Remplace par ta clé anon Supabase
-const SUPABASE_KEY = 'sb_publishable_H9-U7phxUxTrmK-iEZCvgg_7GgYIpAI';
+const SUPABASE_KEY = 'REMPLACE_PAR_TA_CLE_ANON';
  
-// ─── STATE ────────────────────────────────────────────────
 let currentTab = 'hebdo';
 let currentWeek = getCurrentWeek();
 let allDispatched = [];
@@ -460,61 +461,50 @@ let allDelivered = [];
 let allConsumed = [];
 let allStock12h30 = [];
  
-// ─── UTILS ────────────────────────────────────────────────
 function getCurrentWeek() {
   const now = new Date();
-  const start = new Date(now.getFullYear(), 0, 1);
-  const diff = now - start;
-  const oneWeek = 7 * 24 * 60 * 60 * 1000;
-  return Math.ceil((diff + start.getDay() * 24 * 60 * 60 * 1000) / oneWeek);
+  const d = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()));
+  const dayNum = d.getUTCDay() || 7;
+  d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+  const yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1));
+  return Math.ceil((((d - yearStart) / 86400000) + 1)/7);
 }
  
-function fmt(n, decimals = 0) {
-  if (n === null || n === undefined || isNaN(n)) return '—';
-  return new Intl.NumberFormat('fr-FR', {
-    minimumFractionDigits: decimals,
-    maximumFractionDigits: decimals
-  }).format(n);
+function fmt(n, d=0) {
+  if (n===null||n===undefined||isNaN(n)) return '—';
+  return new Intl.NumberFormat('fr-FR',{minimumFractionDigits:d,maximumFractionDigits:d}).format(n);
 }
  
 function fmtEuro(n) {
-  if (n === null || n === undefined || isNaN(n)) return '—';
-  return new Intl.NumberFormat('fr-FR', {
-    style: 'currency', currency: 'EUR',
-    minimumFractionDigits: 0, maximumFractionDigits: 0
-  }).format(n);
+  if (n===null||n===undefined||isNaN(n)) return '—';
+  return new Intl.NumberFormat('fr-FR',{style:'currency',currency:'EUR',minimumFractionDigits:0,maximumFractionDigits:0}).format(n);
 }
  
 function fmtPct(n) {
-  if (n === null || n === undefined || isNaN(n) || !isFinite(n)) return '—';
-  return fmt(n * 100, 1) + '%';
+  if (n===null||n===undefined||isNaN(n)||!isFinite(n)) return '—';
+  return fmt(n*100,1)+'%';
 }
  
 function pctClass(n) {
-  if (!n || !isFinite(n)) return '';
-  if (n < 0.10) return 'badge-green';
-  if (n < 0.20) return 'badge-orange';
-  return 'badge-red';
+  if (!n||!isFinite(n)) return '';
+  if (n<0.10) return 'c-green';
+  if (n<0.20) return 'c-orange';
+  return 'c-red';
 }
  
-// ─── API ──────────────────────────────────────────────────
-async function fetchAll(table, select = '*') {
-  const url = `${SUPABASE_URL}/rest/v1/${table}?select=${select}&limit=100000`;
+async function fetchAll(table, select='*') {
+  const url = `${SUPABASE_URL}/rest/v1/${table}?select=${select}&limit=200000`;
   const r = await fetch(url, {
-    headers: {
-      'apikey': SUPABASE_KEY,
-      'Authorization': `Bearer ${SUPABASE_KEY}`
-    }
+    headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
   });
   if (!r.ok) throw new Error(`Erreur ${table}: ${r.status}`);
   return r.json();
 }
  
-// ─── FILTER LOGIC ─────────────────────────────────────────
-function filterRows(rows, siteVal, catVal, dateField = 'date') {
+function filterRows(rows, siteVal, catVal) {
   return rows.filter(r => {
-    const siteOk = siteVal === 'all' || r.site === siteVal || r.site_name === siteVal;
-    const catOk = catVal === 'EPD' ? r.epd === 'EPD' : r.category2 === catVal;
+    const siteOk = siteVal==='all' || r.site===siteVal || r.site_name===siteVal;
+    const catOk = catVal==='EPD' ? r.epd==='EPD' : r.category2===catVal;
     return siteOk && catOk;
   });
 }
@@ -522,11 +512,10 @@ function filterRows(rows, siteVal, catVal, dateField = 'date') {
 function getSite() { return document.getElementById('siteFilter').value; }
 function getCat() { return document.getElementById('catFilter').value; }
  
-// ─── LOAD DATA ────────────────────────────────────────────
 async function loadData() {
   try {
     document.getElementById('mainContent').innerHTML =
-      '<div class="loading"><div class="spinner"></div> Chargement des données...</div>';
+      '<div class="loading"><div class="spinner"></div> Chargement des données Popchef...</div>';
  
     [allDispatched, allDelivered, allConsumed, allStock12h30] = await Promise.all([
       fetchAll('dispatched'),
@@ -535,373 +524,252 @@ async function loadData() {
       fetchAll('stock_12h30')
     ]);
  
-    // Populate site filter
     const sites = [...new Set([
-      ...allDispatched.map(r => r.site),
-      ...allDelivered.map(r => r.site_name),
+      ...allDispatched.map(r=>r.site),
+      ...allDelivered.map(r=>r.site_name),
     ].filter(Boolean))].sort();
  
     const siteSelect = document.getElementById('siteFilter');
     sites.forEach(s => {
       const opt = document.createElement('option');
-      opt.value = s;
-      opt.textContent = s;
+      opt.value = s; opt.textContent = s;
       siteSelect.appendChild(opt);
     });
  
-    // Get weeks
-    const weeks = [...new Set(allDispatched.map(r => r.week_number).filter(Boolean))].sort((a, b) => a - b);
-    if (weeks.length > 0) currentWeek = weeks[weeks.length - 1];
+    const weeks = [...new Set(allDispatched.map(r=>r.week_number).filter(Boolean))].sort((a,b)=>a-b);
+    if (weeks.length>0) currentWeek = weeks[weeks.length-1];
  
-    // Sync info
     document.getElementById('syncInfo').textContent = `Sync auto · ${new Date().toLocaleDateString('fr-FR')}`;
- 
     renderCurrentView();
-  } catch (e) {
+  } catch(e) {
     document.getElementById('mainContent').innerHTML =
-      `<div class="error-box">❌ Erreur de connexion à Supabase<br><br>${e.message}<br><br>Vérifie que ta clé SUPABASE_KEY est correcte dans le fichier index.html</div>`;
+      `<div class="error-box">❌ Erreur de connexion<br><br>${e.message}<br><br>Vérifiez la clé SUPABASE_KEY dans le fichier index.html</div>`;
   }
 }
  
-// ─── WEEKLY VIEW ──────────────────────────────────────────
 function renderHebdo() {
   const site = getSite();
   const cat = getCat();
  
   const disp = filterRows(allDispatched, site, cat);
-  const deliv = filterRows(allDelivered.map(r => ({...r, site: r.site_name})), site, cat);
+  const deliv = filterRows(allDelivered.map(r=>({...r,site:r.site_name})), site, cat);
   const conso = filterRows(allConsumed, site, cat);
   const stock = filterRows(allStock12h30, site, cat);
  
-  // Group by week
   const weeks = [...new Set([
-    ...disp.map(r => r.week_number),
-    ...deliv.map(r => r.week_number),
-    ...conso.map(r => r.week_number),
-  ].filter(Boolean))].sort((a, b) => a - b);
+    ...disp.map(r=>r.week_number),
+    ...deliv.map(r=>r.week_number),
+    ...conso.map(r=>r.week_number),
+  ].filter(Boolean))].sort((a,b)=>a-b);
  
-  if (weeks.length === 0) {
+  if (weeks.length===0) {
     document.getElementById('mainContent').innerHTML =
       '<div class="empty"><div class="empty-icon">🔍</div>Aucune donnée pour ces filtres</div>';
     return;
   }
  
-  // Aggregate by week
-  function aggByWeek(rows, qtyField, valField) {
-    const m = {};
+  function aggByWeek(rows, qF, vF) {
+    const m={};
     rows.forEach(r => {
-      const w = r.week_number;
-      if (!w) return;
-      if (!m[w]) m[w] = { qty: 0, val: 0 };
-      m[w].qty += (r[qtyField] || 0);
-      m[w].val += (r[valField] || 0);
+      const w=r.week_number; if(!w)return;
+      if(!m[w])m[w]={qty:0,val:0};
+      m[w].qty+=(r[qF]||0); m[w].val+=(r[vF]||0);
     });
     return m;
   }
  
-  function aggProteinByWeek(rows, qtyField) {
-    const m = {};
+  function aggProtByWeek(rows, qF) {
+    const m={};
     rows.forEach(r => {
-      const w = r.week_number;
-      if (!w || !r.protein_type) return;
-      if (!m[w]) m[w] = { total: 0, Poisson: 0, Viande: 0, Végétarien: 0, Volaille: 0 };
-      m[w].total += (r[qtyField] || 0);
-      if (m[w][r.protein_type] !== undefined)
-        m[w][r.protein_type] += (r[qtyField] || 0);
+      const w=r.week_number; if(!w||!r.protein_type)return;
+      if(!m[w])m[w]={total:0,Poisson:0,Viande:0,Végétarien:0,Volaille:0};
+      m[w].total+=(r[qF]||0);
+      if(m[w][r.protein_type]!==undefined)m[w][r.protein_type]+=(r[qF]||0);
     });
     return m;
   }
  
   function aggStockByWeek(rows) {
-    const m = {};
-    const counts = {};
-    rows.forEach(r => {
-      const w = r.week_number;
-      if (!w) return;
-      if (!m[w]) { m[w] = 0; counts[w] = 0; }
-      m[w] += (r.quantity || 0);
-      counts[w]++;
-    });
-    const avg = {};
-    Object.keys(m).forEach(w => avg[w] = counts[w] > 0 ? m[w] / counts[w] : 0);
+    const m={},cnt={};
+    rows.forEach(r=>{const w=r.week_number;if(!w)return;if(!m[w]){m[w]=0;cnt[w]=0;}m[w]+=(r.quantity||0);cnt[w]++;});
+    const avg={};Object.keys(m).forEach(w=>avg[w]=cnt[w]>0?m[w]/cnt[w]:0);
     return avg;
   }
  
-  const dAgg = aggByWeek(disp, 'quantity', 'value');
-  const lvAgg = aggByWeek(deliv, 'quantity_detected', 'value');
-  const coAgg = aggByWeek(conso, 'quantity', 'value');
-  const lvProt = aggProteinByWeek(deliv, 'quantity_detected');
-  const coProt = aggProteinByWeek(conso, 'quantity');
-  const stAgg = aggStockByWeek(stock);
+  const dA=aggByWeek(disp,'quantity','value');
+  const lA=aggByWeek(deliv,'quantity_detected','value');
+  const cA=aggByWeek(conso,'quantity','value');
+  const lP=aggProtByWeek(deliv,'quantity_detected');
+  const cP=aggProtByWeek(conso,'quantity');
+  const sA=aggStockByWeek(stock);
  
-  // Build table
-  let html = '<div class="table-wrapper"><table><thead><tr>';
-  html += '<th>Indicateur</th>';
-  weeks.forEach(w => html += `<th>S${w}</th>`);
-  html += '</tr></thead><tbody>';
+  let html='<div class="table-wrapper"><table><thead><tr>';
+  html+='<th>Indicateur</th>';
+  weeks.forEach(w=>html+=`<th>S${w}</th>`);
+  html+='</tr></thead><tbody>';
  
-  function row(label, fn, cls = '', isSection = false, isGachis = false) {
-    const trClass = isSection ? 'row-section' : isGachis ? 'row-gachis' : '';
-    html += `<tr class="${trClass}"><td>${label}</td>`;
-    weeks.forEach(w => {
-      const val = fn(w);
-      html += `<td class="${cls}">${val}</td>`;
-    });
-    html += '</tr>';
+  function row(label,fn,isSection=false,isGachis=false) {
+    const cls=isSection?'row-section':isGachis?'row-gachis':'';
+    html+=`<tr class="${cls}"><td>${label}</td>`;
+    weeks.forEach(w=>html+=`<td>${fn(w)}</td>`);
+    html+='</tr>';
   }
  
-  // DISPATCHÉ
-  row('DISPATCHÉ', () => '', '', true);
-  row('Dispatché (unités)', w => fmt(dAgg[w]?.qty));
-  row('Valo PAHT€', w => fmtEuro(dAgg[w]?.val));
- 
-  // LIVRÉ
-  row('LIVRÉ', () => '', '', true);
-  row('Livré (unités)', w => fmt(lvAgg[w]?.qty));
-  row('Valo PAHT€', w => fmtEuro(lvAgg[w]?.val));
-  row('% vs dispatch', w => {
-    const pct = dAgg[w]?.qty > 0 ? (lvAgg[w]?.qty || 0) / dAgg[w].qty : null;
-    return `<span class="${pct > 1 ? 'badge-orange' : ''}">${fmtPct(pct)}</span>`;
+  row('Dispatché',()=>'',true);
+  row('Dispatché (unités)',w=>fmt(dA[w]?.qty));
+  row('Valo PAHT€',w=>fmtEuro(dA[w]?.val));
+  row('Livré',()=>'',true);
+  row('Livré (unités)',w=>fmt(lA[w]?.qty));
+  row('Valo PAHT€',w=>fmtEuro(lA[w]?.val));
+  row('% vs dispatch',w=>{const p=dA[w]?.qty>0?(lA[w]?.qty||0)/dA[w].qty:null;return `<span>${fmtPct(p)}</span>`;});
+  ['Poisson','Viande','Végétarien','Volaille'].forEach(p=>{
+    row(p+' %',w=>{const d=lP[w];if(!d||d.total===0)return '—';return fmtPct((d[p]||0)/d.total);});
   });
-  ['Poisson','Viande','Végétarien','Volaille'].forEach(p => {
-    row(p + ' %', w => {
-      const d = lvProt[w];
-      if (!d || d.total === 0) return '—';
-      return fmtPct((d[p] || 0) / d.total);
-    });
+  row('Consommé',()=>'',true);
+  row('Consommé (unités)',w=>fmt(cA[w]?.qty));
+  row('Valo PAHT€',w=>fmtEuro(cA[w]?.val));
+  ['Poisson','Viande','Végétarien','Volaille'].forEach(p=>{
+    row(p+' %',w=>{const d=cP[w];if(!d||d.total===0)return '—';return fmtPct((d[p]||0)/d.total);});
   });
- 
-  // CONSOMMÉ
-  row('CONSOMMÉ', () => '', '', true);
-  row('Consommé (unités)', w => fmt(coAgg[w]?.qty));
-  row('Valo PAHT€', w => fmtEuro(coAgg[w]?.val));
-  ['Poisson','Viande','Végétarien','Volaille'].forEach(p => {
-    row(p + ' %', w => {
-      const d = coProt[w];
-      if (!d || d.total === 0) return '—';
-      return fmtPct((d[p] || 0) / d.total);
-    });
-  });
- 
-  // STOCK
-  row('STOCK', () => '', '', true);
-  row('Stock moy / réf 12h30', w => fmt(stAgg[w], 1));
- 
-  // GÂCHIS
-  row('GÂCHIS', () => '', '', true);
-  row('Gâchis #', w => {
-    const g = (dAgg[w]?.qty || 0) - (lvAgg[w]?.qty || 0);
-    return fmt(g);
-  }, '', false, true);
-  row('Valo gâchis €', w => {
-    const g = (dAgg[w]?.val || 0) - (lvAgg[w]?.val || 0);
-    return fmtEuro(g);
-  }, '', false, true);
-  row('Gâchis %', w => {
-    const g = dAgg[w]?.qty > 0
-      ? ((dAgg[w].qty - (lvAgg[w]?.qty || 0)) / dAgg[w].qty)
-      : null;
+  row('Stock',()=>'',true);
+  row('Stock moy / réf 12h30',w=>fmt(sA[w],1));
+  row('Gâchis',()=>'',true);
+  row('Gâchis #',w=>fmt((dA[w]?.qty||0)-(lA[w]?.qty||0)),false,true);
+  row('Valo gâchis €',w=>fmtEuro((dA[w]?.val||0)-(lA[w]?.val||0)),false,true);
+  row('Gâchis %',w=>{
+    const g=dA[w]?.qty>0?((dA[w].qty-(lA[w]?.qty||0))/dA[w].qty):null;
     return `<span class="${pctClass(g)}">${fmtPct(g)}</span>`;
-  }, '', false, true);
+  },false,true);
  
-  html += '</tbody></table></div>';
-  document.getElementById('mainContent').innerHTML = html;
+  html+='</tbody></table></div>';
+  document.getElementById('mainContent').innerHTML=html;
 }
  
-// ─── DAILY VIEW ───────────────────────────────────────────
 function renderQuotidien() {
-  const site = getSite();
-  const cat = getCat();
-  const week = currentWeek;
+  const site=getSite(), cat=getCat(), week=currentWeek;
+  document.getElementById('weekLabel').textContent=`S${week}`;
  
-  document.getElementById('weekLabel').textContent = `S${week}`;
+  const days=['Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi','Dimanche'];
+  const dayMap={lundi:0,mardi:1,mercredi:2,jeudi:3,vendredi:4,samedi:5,dimanche:6};
  
-  const days = ['Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi','Dimanche'];
-  const dayMap = { lundi:0, mardi:1, mercredi:2, jeudi:3, vendredi:4, samedi:5, dimanche:6 };
- 
-  function filterWeek(rows, siteField = 'site') {
-    return rows.filter(r => {
-      const siteOk = site === 'all' || r[siteField] === site;
-      const catOk = cat === 'EPD' ? r.epd === 'EPD' : r.category2 === cat;
-      const weekOk = r.week_number === week;
-      return siteOk && catOk && weekOk;
+  function fw(rows,sf='site') {
+    return rows.filter(r=>{
+      const sOk=site==='all'||r[sf]===site;
+      const cOk=cat==='EPD'?r.epd==='EPD':r.category2===cat;
+      return sOk&&cOk&&r.week_number===week;
     });
   }
  
-  const disp = filterWeek(allDispatched);
-  const deliv = filterWeek(allDelivered.map(r => ({...r, site: r.site_name})));
-  const conso = filterWeek(allConsumed);
-  const stock = filterWeek(allStock12h30);
+  const disp=fw(allDispatched);
+  const deliv=fw(allDelivered.map(r=>({...r,site:r.site_name})));
+  const conso=fw(allConsumed);
+  const stock=fw(allStock12h30);
  
-  function aggByDay(rows, qtyField, valField) {
-    const m = Array(7).fill(null).map(() => ({ qty: 0, val: 0 }));
-    rows.forEach(r => {
-      const idx = dayMap[(r.day_name || '').toLowerCase()];
-      if (idx === undefined) return;
-      m[idx].qty += (r[qtyField] || 0);
-      m[idx].val += (r[valField] || 0);
-    });
+  function aggByDay(rows,qF,vF) {
+    const m=Array(7).fill(null).map(()=>({qty:0,val:0}));
+    rows.forEach(r=>{const i=dayMap[(r.day_name||'').toLowerCase()];if(i===undefined)return;m[i].qty+=(r[qF]||0);m[i].val+=(r[vF]||0);});
     return m;
   }
  
-  function aggStockByDay(rows) {
-    const totals = Array(7).fill(0);
-    const counts = Array(7).fill(0);
-    rows.forEach(r => {
-      const idx = dayMap[(r.day_name || '').toLowerCase()];
-      if (idx === undefined) return;
-      totals[idx] += (r.quantity || 0);
-      counts[idx]++;
-    });
-    return totals.map((t, i) => counts[i] > 0 ? t / counts[i] : 0);
+  function avgStockByDay(rows) {
+    const t=Array(7).fill(0),c=Array(7).fill(0);
+    rows.forEach(r=>{const i=dayMap[(r.day_name||'').toLowerCase()];if(i===undefined)return;t[i]+=(r.quantity||0);c[i]++;});
+    return t.map((v,i)=>c[i]>0?v/c[i]:0);
   }
  
-  const dAgg = aggByDay(disp, 'quantity', 'value');
-  const lvAgg = aggByDay(deliv, 'quantity_detected', 'value');
-  const coAgg = aggByDay(conso, 'quantity', 'value');
-  const stAgg = aggStockByDay(stock);
+  const dA=aggByDay(disp,'quantity','value');
+  const lA=aggByDay(deliv,'quantity_detected','value');
+  const cA=aggByDay(conso,'quantity','value');
+  const sA=avgStockByDay(stock);
  
-  const totalDisp = dAgg.reduce((s, r) => s + r.qty, 0);
-  const totalLiv = lvAgg.reduce((s, r) => s + r.qty, 0);
-  const totalConso = coAgg.reduce((s, r) => s + r.qty, 0);
-  const gachis = totalLiv - totalConso;
-  const gachisVal = lvAgg.reduce((s, r) => s + r.val, 0) - coAgg.reduce((s, r) => s + r.val, 0);
-  const gachisPct = totalLiv > 0 ? gachis / totalLiv : null;
+  const tD=dA.reduce((s,r)=>s+r.qty,0);
+  const tL=lA.reduce((s,r)=>s+r.qty,0);
+  const tC=cA.reduce((s,r)=>s+r.qty,0);
+  const gN=tL-tC, gV=lA.reduce((s,r)=>s+r.val,0)-cA.reduce((s,r)=>s+r.val,0);
+  const gP=tL>0?gN/tL:null;
  
-  let html = `
+  let html=`
   <div class="stats-row">
     <div class="stat-card">
       <div class="stat-label">Dispatché S${week}</div>
-      <div class="stat-value">${fmt(totalDisp)}</div>
-      <div class="stat-sub">${fmtEuro(dAgg.reduce((s,r)=>s+r.val,0))}</div>
+      <div class="stat-value">${fmt(tD)}</div>
+      <div class="stat-sub">${fmtEuro(dA.reduce((s,r)=>s+r.val,0))}</div>
     </div>
     <div class="stat-card">
       <div class="stat-label">Livré S${week}</div>
-      <div class="stat-value">${fmt(totalLiv)}</div>
-      <div class="stat-sub">${fmtEuro(lvAgg.reduce((s,r)=>s+r.val,0))}</div>
+      <div class="stat-value">${fmt(tL)}</div>
+      <div class="stat-sub">${fmtEuro(lA.reduce((s,r)=>s+r.val,0))}</div>
     </div>
     <div class="stat-card">
       <div class="stat-label">Consommé S${week}</div>
-      <div class="stat-value">${fmt(totalConso)}</div>
-      <div class="stat-sub">${fmtEuro(coAgg.reduce((s,r)=>s+r.val,0))}</div>
+      <div class="stat-value">${fmt(tC)}</div>
+      <div class="stat-sub">${fmtEuro(cA.reduce((s,r)=>s+r.val,0))}</div>
     </div>
-    <div class="stat-card">
+    <div class="stat-card highlight">
       <div class="stat-label">Gâchis S${week}</div>
-      <div class="stat-value ${pctClass(gachisPct)}">${fmtPct(gachisPct)}</div>
-      <div class="stat-sub">${fmtEuro(gachisVal)} · ${fmt(gachis)} unités</div>
+      <div class="stat-value ${pctClass(gP)}" style="color:var(--beurre)">${fmtPct(gP)}</div>
+      <div class="stat-sub">${fmtEuro(gV)} · ${fmt(gN)} unités</div>
     </div>
   </div>
-  <div class="table-wrapper"><table><thead><tr>
-    <th>Indicateur</th>`;
+  <div class="table-wrapper"><table><thead><tr><th>Indicateur</th>`;
  
-  days.forEach(d => html += `<th>${d}</th>`);
-  html += '<th>Total</th></tr></thead><tbody>';
+  days.forEach(d=>html+=`<th>${d}</th>`);
+  html+='<th>Total</th></tr></thead><tbody>';
  
-  function rowD(label, vals, totalVal, cls = '', isSection = false, isGachis = false) {
-    const trClass = isSection ? 'row-section' : isGachis ? 'row-gachis' : '';
-    html += `<tr class="${trClass}"><td>${label}</td>`;
-    vals.forEach(v => html += `<td class="${cls}">${v}</td>`);
-    html += `<td class="${cls}"><strong>${totalVal}</strong></td></tr>`;
+  function rowD(label,vals,tot,isSection=false,isGachis=false) {
+    const cls=isSection?'row-section':isGachis?'row-gachis':'';
+    html+=`<tr class="${cls}"><td>${label}</td>`;
+    vals.forEach(v=>html+=`<td>${v}</td>`);
+    html+=`<td><strong>${tot}</strong></td></tr>`;
   }
  
-  // DISPATCHÉ
-  rowD('DISPATCHÉ', Array(7).fill(''), '', '', true);
-  rowD('Dispatché (unités)',
-    dAgg.map(r => fmt(r.qty)),
-    fmt(totalDisp)
-  );
-  rowD('Valo PAHT€',
-    dAgg.map(r => fmtEuro(r.val)),
-    fmtEuro(dAgg.reduce((s,r)=>s+r.val,0))
-  );
+  rowD('Dispatché',Array(7).fill(''),'',true);
+  rowD('Dispatché (unités)',dA.map(r=>fmt(r.qty)),fmt(tD));
+  rowD('Valo PAHT€',dA.map(r=>fmtEuro(r.val)),fmtEuro(dA.reduce((s,r)=>s+r.val,0)));
+  rowD('Livré',Array(7).fill(''),'',true);
+  rowD('Livré (unités)',lA.map(r=>fmt(r.qty)),fmt(tL));
+  rowD('Valo PAHT€',lA.map(r=>fmtEuro(r.val)),fmtEuro(lA.reduce((s,r)=>s+r.val,0)));
+  rowD('% vs dispatch',lA.map((r,i)=>{const p=dA[i].qty>0?r.qty/dA[i].qty:null;return fmtPct(p);}),fmtPct(tD>0?tL/tD:null));
+  rowD('Consommé',Array(7).fill(''),'',true);
+  rowD('Consommé (unités)',cA.map(r=>fmt(r.qty)),fmt(tC));
+  rowD('Valo PAHT€',cA.map(r=>fmtEuro(r.val)),fmtEuro(cA.reduce((s,r)=>s+r.val,0)));
+  rowD('Stock',Array(7).fill(''),'',true);
+  rowD('Stock moy 12h30',sA.map(v=>fmt(v,1)),fmt(sA.reduce((s,v)=>s+v,0)/7,1));
+  rowD('Gâchis',Array(7).fill(''),'',true);
+  const gJ=lA.map((r,i)=>r.qty-cA[i].qty);
+  const gVJ=lA.map((r,i)=>r.val-cA[i].val);
+  const gPJ=lA.map((r,i)=>r.qty>0?(r.qty-cA[i].qty)/r.qty:null);
+  rowD('Gâchis #',gJ.map(g=>fmt(g)),fmt(gN),false,true);
+  rowD('Valo gâchis €',gVJ.map(g=>fmtEuro(g)),fmtEuro(gV),false,true);
+  rowD('Gâchis %',gPJ.map(p=>`<span class="${pctClass(p)}">${fmtPct(p)}</span>`),`<span class="${pctClass(gP)}">${fmtPct(gP)}</span>`,false,true);
  
-  // LIVRÉ
-  rowD('LIVRÉ', Array(7).fill(''), '', '', true);
-  rowD('Livré (unités)',
-    lvAgg.map(r => fmt(r.qty)),
-    fmt(totalLiv)
-  );
-  rowD('Valo PAHT€',
-    lvAgg.map(r => fmtEuro(r.val)),
-    fmtEuro(lvAgg.reduce((s,r)=>s+r.val,0))
-  );
-  rowD('% vs dispatch',
-    lvAgg.map((r, i) => {
-      const p = dAgg[i].qty > 0 ? r.qty / dAgg[i].qty : null;
-      return `<span class="${p > 1 ? 'badge-orange' : ''}">${fmtPct(p)}</span>`;
-    }),
-    fmtPct(totalDisp > 0 ? totalLiv / totalDisp : null)
-  );
- 
-  // CONSOMMÉ
-  rowD('CONSOMMÉ', Array(7).fill(''), '', '', true);
-  rowD('Consommé (unités)',
-    coAgg.map(r => fmt(r.qty)),
-    fmt(totalConso)
-  );
-  rowD('Valo PAHT€',
-    coAgg.map(r => fmtEuro(r.val)),
-    fmtEuro(coAgg.reduce((s,r)=>s+r.val,0))
-  );
- 
-  // STOCK
-  rowD('STOCK', Array(7).fill(''), '', '', true);
-  rowD('Stock moy 12h30',
-    stAgg.map(v => fmt(v, 1)),
-    fmt(stAgg.reduce((s,v)=>s+v,0) / 7, 1)
-  );
- 
-  // GÂCHIS
-  rowD('GÂCHIS', Array(7).fill(''), '', '', true);
-  const gachisJ = lvAgg.map((r,i) => r.qty - coAgg[i].qty);
-  const gachisValJ = lvAgg.map((r,i) => r.val - coAgg[i].val);
-  const gachisPctJ = lvAgg.map((r,i) => r.qty > 0 ? (r.qty - coAgg[i].qty) / r.qty : null);
- 
-  rowD('Gâchis #',
-    gachisJ.map(g => fmt(g)),
-    fmt(gachis),
-    '', false, true
-  );
-  rowD('Valo gâchis €',
-    gachisValJ.map(g => fmtEuro(g)),
-    fmtEuro(gachisVal),
-    '', false, true
-  );
-  rowD('Gâchis %',
-    gachisPctJ.map(p => `<span class="${pctClass(p)}">${fmtPct(p)}</span>`),
-    `<span class="${pctClass(gachisPct)}">${fmtPct(gachisPct)}</span>`,
-    '', false, true
-  );
- 
-  html += '</tbody></table></div>';
-  document.getElementById('mainContent').innerHTML = html;
+  html+='</tbody></table></div>';
+  document.getElementById('mainContent').innerHTML=html;
 }
  
-// ─── NAVIGATION ───────────────────────────────────────────
 function switchTab(tab) {
-  currentTab = tab;
-  document.querySelectorAll('.tab').forEach((t, i) => {
-    t.classList.toggle('active', (i === 0 && tab === 'hebdo') || (i === 1 && tab === 'quotidien'));
+  currentTab=tab;
+  document.querySelectorAll('.tab').forEach((t,i)=>{
+    t.classList.toggle('active',(i===0&&tab==='hebdo')||(i===1&&tab==='quotidien'));
   });
-  document.getElementById('weekFilterGroup').classList.toggle('hidden', tab === 'hebdo');
+  document.getElementById('weekFilterGroup').classList.toggle('hidden',tab==='hebdo');
   renderCurrentView();
 }
  
-function changeWeek(delta) {
-  currentWeek += delta;
-  if (currentWeek < 1) currentWeek = 52;
-  if (currentWeek > 52) currentWeek = 1;
+function changeWeek(d) {
+  currentWeek+=d;
+  if(currentWeek<1)currentWeek=53;
+  if(currentWeek>53)currentWeek=1;
   renderQuotidien();
 }
  
 function applyFilters() { renderCurrentView(); }
  
 function renderCurrentView() {
-  if (currentTab === 'hebdo') renderHebdo();
+  if(currentTab==='hebdo') renderHebdo();
   else renderQuotidien();
 }
  
-// ─── INIT ─────────────────────────────────────────────────
 loadData();
 </script>
 </body>
