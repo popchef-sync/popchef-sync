@@ -323,6 +323,9 @@ def transform_proofs(rows):
 # ─── MAIN ─────────────────────────────────────────────────
 
 def main():
+    for t in ["dispatched","delivered","consumed","stock_12h30","stock_6h","delivery_proofs","import_logs"]:
+    truncate(t)
+    
     print("🚀 Démarrage synchronisation Metabase → Supabase")
     print(f"   {datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')} UTC\n")
 
