@@ -91,45 +91,27 @@ def supabase_headers():
         "apikey": SUPABASE_KEY,
         "Authorization": f"Bearer {SUPABASE_KEY}",
         "Content-Type": "application/json",
-     "Prefer": "return=minimal"
+        "Prefer": "resolution=merge-duplicates"
     }
 
 def upsert(table, rows):
     if not rows:
         print(f"  Aucune ligne pour {table}")
         return
-    batch_size = 500
+    batch_size = 200
     total = 0
     for i in range(0, len(rows), batch_size):
         batch = rows[i:i+batch_size]
         r = requests.post(
             f"{SUPABASE_URL}/rest/v1/{table}",
-            headers={
-                "apikey": SUPABASE_KEY,
-                "Authorization": f"Bearer {SUPABASE_KEY}",
-                "Content-Type": "application/json",
-                "Prefer": "return=minimal"
-            },
+            headers=supabase_headers(),
             json=batch
         )
         if r.status_code not in [200, 201]:
             print(f"  ❌ Erreur Supabase {table}: {r.status_code} {r.text[:300]}")
             return
         total += len(batch)
-        print(f"  ... {total}/{len(rows)}")
     print(f"  ✅ {total} lignes insérées dans {table}")
-
-def truncate(table):
-    r = requests.post(
-        f"{SUPABASE_URL}/rest/v1/rpc/truncate_table",
-        headers={
-            "apikey": SUPABASE_KEY,
-            "Authorization": f"Bearer {SUPABASE_KEY}",
-            "Content-Type": "application/json"
-        },
-        json={"table_name": table}
-    )
-    print(f"  Table {table} vidée")
 
 def log_import(data_type, row_count, status="success"):
     requests.post(
@@ -182,20 +164,58 @@ def fetch_question(token, question_id, params):
 # ─── PARAMÈTRES METABASE PAR QUESTION ─────────────────────
 
 def params_dispatche():
-    return []
+    """Question 1684 - paramètres: Date, CANTINE, CATEGORIE"""
+    return [
+        {
+            "type": "date/range",
+            "target": ["dimension", ["template-tag", "Date"]],
+            "value": f"{START_DATE}~{END_DATE}"
+        }
+    ]
 
 def params_consos():
-    return []
+    """Question 1683 - paramètres: DATE, EMPLACEMENT, CATEGORIE"""
+    return [
+        {
+            "type": "date/range",
+            "target": ["dimension", ["template-tag", "DATE"]],
+            "value": f"{START_DATE}~{END_DATE}"
+        }
+    ]
 
 def params_images():
-    return []
+    """Question 1673 - paramètres: Date, CANTINE"""
+    return [
+        {
+            "type": "date/range",
+            "target": ["dimension", ["template-tag", "Date"]],
+            "value": f"{START_DATE}~{END_DATE}"
+        }
+    ]
 
 def params_livraison():
-    """Pas de filtre — on récupère tout et on filtre côté Supabase"""
-    return []
+    """Question 1687 - paramètres: DATE, FRIGO"""
+    return [
+        {
+            "type": "date/range",
+            "target": ["dimension", ["template-tag", "DATE"]],
+            "value": f"{START_DATE}~{END_DATE}"
+        }
+    ]
 
 def params_stock(heure):
+    """Question 1682 - paramètres: DATE_RANGE.start, DATE_RANGE.end, HEURE, EMPLACEMENT"""
     return [
+        {
+            "type": "date/single",
+            "target": ["dimension", ["template-tag", "DATE_RANGE.start"]],
+            "value": str(START_DATE)
+        },
+        {
+            "type": "date/single",
+            "target": ["dimension", ["template-tag", "DATE_RANGE.end"]],
+            "value": str(END_DATE)
+        },
         {
             "type": "category",
             "target": ["variable", ["template-tag", "HEURE"]],
@@ -323,9 +343,6 @@ def transform_proofs(rows):
 # ─── MAIN ─────────────────────────────────────────────────
 
 def main():
-    for t in ["dispatched","delivered","consumed","stock_12h30","stock_6h","delivery_proofs","import_logs"]:
-    truncate(t)
-    
     print("🚀 Démarrage synchronisation Metabase → Supabase")
     print(f"   {datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')} UTC\n")
 
