@@ -173,6 +173,7 @@ def params_images():
     return []
 
 def params_livraison():
+    """Pas de filtre — on récupère tout et on filtre côté Supabase"""
     return []
 
 def params_stock(heure):
