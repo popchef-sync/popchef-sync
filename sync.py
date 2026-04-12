@@ -91,7 +91,7 @@ def supabase_headers():
         "apikey": SUPABASE_KEY,
         "Authorization": f"Bearer {SUPABASE_KEY}",
         "Content-Type": "application/json",
-        "Prefer": "resolution=merge-duplicates"
+     "Prefer": "return=minimal"
     }
 
 def upsert(table, rows):
