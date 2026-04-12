@@ -164,58 +164,19 @@ def fetch_question(token, question_id, params):
 # ─── PARAMÈTRES METABASE PAR QUESTION ─────────────────────
 
 def params_dispatche():
-    """Question 1684 - paramètres: Date, CANTINE, CATEGORIE"""
-    return [
-        {
-            "type": "date/range",
-            "target": ["dimension", ["template-tag", "Date"]],
-            "value": f"{START_DATE}~{END_DATE}"
-        }
-    ]
+    return []
 
 def params_consos():
-    """Question 1683 - paramètres: DATE, EMPLACEMENT, CATEGORIE"""
-    return [
-        {
-            "type": "date/range",
-            "target": ["dimension", ["template-tag", "DATE"]],
-            "value": f"{START_DATE}~{END_DATE}"
-        }
-    ]
+    return []
 
 def params_images():
-    """Question 1673 - paramètres: Date, CANTINE"""
-    return [
-        {
-            "type": "date/range",
-            "target": ["dimension", ["template-tag", "Date"]],
-            "value": f"{START_DATE}~{END_DATE}"
-        }
-    ]
+    return []
 
 def params_livraison():
-    """Question 1687 - paramètres: DATE, FRIGO"""
-    return [
-        {
-            "type": "date/range",
-            "target": ["dimension", ["template-tag", "DATE"]],
-            "value": f"{START_DATE}~{END_DATE}"
-        }
-    ]
+    return []
 
 def params_stock(heure):
-    """Question 1682 - DATE_RANGE.start et DATE_RANGE.end sont des paramètres SQL natifs"""
     return [
-        {
-            "type": "date/single",
-            "target": ["variable", ["template-tag", "DATE_RANGE.start"]],
-            "value": str(START_DATE)
-        },
-        {
-            "type": "date/single",
-            "target": ["variable", ["template-tag", "DATE_RANGE.end"]],
-            "value": str(END_DATE)
-        },
         {
             "type": "category",
             "target": ["variable", ["template-tag", "HEURE"]],
