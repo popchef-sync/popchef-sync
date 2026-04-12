@@ -1,1 +1,909 @@
-
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard Livraison & Gâchis</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f1117;
+    --surface: #1a1d27;
+    --surface2: #22263a;
+    --border: #2e3250;
+    --accent: #4f6ef7;
+    --accent2: #7c3aed;
+    --green: #22c55e;
+    --orange: #f97316;
+    --red: #ef4444;
+    --text: #e2e8f0;
+    --muted: #64748b;
+    --mono: 'DM Mono', monospace;
+    --sans: 'DM Sans', sans-serif;
+  }
+ 
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+ 
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 14px;
+    min-height: 100vh;
+  }
+ 
+  /* HEADER */
+  .header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 16px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+ 
+  .header-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+ 
+  .logo {
+    width: 32px;
+    height: 32px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+  }
+ 
+  .title {
+    font-size: 16px;
+    font-weight: 600;
+    letter-spacing: -0.3px;
+  }
+ 
+  .subtitle {
+    font-size: 12px;
+    color: var(--muted);
+    font-family: var(--mono);
+  }
+ 
+  .sync-info {
+    font-size: 12px;
+    color: var(--muted);
+    font-family: var(--mono);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+ 
+  .sync-dot {
+    width: 6px;
+    height: 6px;
+    background: var(--green);
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+  }
+ 
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+ 
+  /* TABS */
+  .tabs {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0 24px;
+    display: flex;
+    gap: 0;
+  }
+ 
+  .tab {
+    padding: 12px 20px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--muted);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s;
+  }
+ 
+  .tab.active {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+  }
+ 
+  .tab:hover:not(.active) {
+    color: var(--text);
+  }
+ 
+  /* FILTERS */
+  .filters {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 12px 24px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+ 
+  .filter-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+ 
+  .filter-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-family: var(--mono);
+  }
+ 
+  .filter-select {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-family: var(--sans);
+    cursor: pointer;
+    outline: none;
+    transition: border-color 0.2s;
+    min-width: 200px;
+  }
+ 
+  .filter-select:focus {
+    border-color: var(--accent);
+  }
+ 
+  /* CONTENT */
+  .content {
+    padding: 24px;
+    overflow-x: auto;
+  }
+ 
+  /* LOADING */
+  .loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 200px;
+    color: var(--muted);
+    gap: 10px;
+    font-family: var(--mono);
+    font-size: 13px;
+  }
+ 
+  .spinner {
+    width: 20px;
+    height: 20px;
+    border: 2px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+ 
+  @keyframes spin { to { transform: rotate(360deg); } }
+ 
+  /* WEEKLY TABLE */
+  .table-wrapper {
+    overflow-x: auto;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+  }
+ 
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    min-width: 800px;
+  }
+ 
+  th, td {
+    padding: 8px 12px;
+    text-align: right;
+    white-space: nowrap;
+    border-bottom: 1px solid var(--border);
+  }
+ 
+  th:first-child, td:first-child {
+    text-align: left;
+    position: sticky;
+    left: 0;
+    background: var(--surface);
+    z-index: 10;
+    min-width: 200px;
+    font-weight: 500;
+  }
+ 
+  thead th {
+    background: var(--surface2);
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 2px solid var(--border);
+  }
+ 
+  thead th:first-child {
+    background: var(--surface2);
+  }
+ 
+  tbody tr:hover td {
+    background: rgba(79, 110, 247, 0.05);
+  }
+ 
+  tbody tr:hover td:first-child {
+    background: rgba(79, 110, 247, 0.08);
+  }
+ 
+  /* SECTION ROWS */
+  .row-section td {
+    background: var(--surface2) !important;
+    color: var(--accent);
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-family: var(--mono);
+    padding: 6px 12px;
+    border-top: 2px solid var(--border);
+  }
+ 
+  .row-section td:first-child {
+    background: var(--surface2) !important;
+  }
+ 
+  /* GACHIS ROWS */
+  .row-gachis td {
+    background: rgba(239, 68, 68, 0.05) !important;
+    font-weight: 600;
+  }
+ 
+  .row-gachis td:first-child {
+    background: rgba(239, 68, 68, 0.08) !important;
+    color: var(--red);
+  }
+ 
+  /* BADGES */
+  .badge-green { color: var(--green); }
+  .badge-orange { color: var(--orange); }
+  .badge-red { color: var(--red); }
+ 
+  /* DAILY VIEW */
+  .daily-controls {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+ 
+  .week-nav {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 4px;
+  }
+ 
+  .week-btn {
+    background: none;
+    border: none;
+    color: var(--muted);
+    cursor: pointer;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 16px;
+    transition: all 0.2s;
+  }
+ 
+  .week-btn:hover {
+    background: var(--border);
+    color: var(--text);
+  }
+ 
+  .week-label {
+    font-family: var(--mono);
+    font-size: 13px;
+    font-weight: 500;
+    padding: 4px 8px;
+    min-width: 80px;
+    text-align: center;
+  }
+ 
+  /* ERROR */
+  .error-box {
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    border-radius: 8px;
+    padding: 16px;
+    color: var(--red);
+    font-family: var(--mono);
+    font-size: 12px;
+    margin: 20px 0;
+  }
+ 
+  /* STATS CARDS */
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+ 
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+  }
+ 
+  .stat-label {
+    font-size: 11px;
+    color: var(--muted);
+    font-family: var(--mono);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 8px;
+  }
+ 
+  .stat-value {
+    font-size: 24px;
+    font-weight: 600;
+    font-family: var(--mono);
+    letter-spacing: -1px;
+  }
+ 
+  .stat-sub {
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 4px;
+  }
+ 
+  /* EMPTY STATE */
+  .empty {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--muted);
+    font-family: var(--mono);
+    font-size: 13px;
+  }
+ 
+  .empty-icon { font-size: 40px; margin-bottom: 16px; }
+ 
+  /* HIDDEN */
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+ 
+<!-- HEADER -->
+<div class="header">
+  <div class="header-left">
+    <div class="logo">🧊</div>
+    <div>
+      <div class="title">Dashboard Livraison & Gâchis</div>
+      <div class="subtitle">Popchef · Frigos connectés</div>
+    </div>
+  </div>
+  <div class="sync-info">
+    <div class="sync-dot"></div>
+    <span id="syncInfo">Chargement...</span>
+  </div>
+</div>
+ 
+<!-- TABS -->
+<div class="tabs">
+  <div class="tab active" onclick="switchTab('hebdo')">📅 Suivi Hebdomadaire</div>
+  <div class="tab" onclick="switchTab('quotidien')">📆 Suivi Quotidien</div>
+</div>
+ 
+<!-- FILTERS -->
+<div class="filters">
+  <div class="filter-group">
+    <span class="filter-label">CLIENT</span>
+    <select class="filter-select" id="siteFilter" onchange="applyFilters()">
+      <option value="all">Emplacement (tous)</option>
+    </select>
+  </div>
+  <div class="filter-group">
+    <span class="filter-label">CATÉGORIE</span>
+    <select class="filter-select" id="catFilter" onchange="applyFilters()">
+      <option value="EPD">TOTAL (EPD)</option>
+      <option value="Dish">Dish</option>
+      <option value="Starter">Starter</option>
+      <option value="Snacking">Snacking</option>
+      <option value="Dessert">Dessert</option>
+    </select>
+  </div>
+  <div class="filter-group hidden" id="weekFilterGroup">
+    <span class="filter-label">SEMAINE</span>
+    <div class="week-nav">
+      <button class="week-btn" onclick="changeWeek(-1)">‹</button>
+      <span class="week-label" id="weekLabel">S14</span>
+      <button class="week-btn" onclick="changeWeek(1)">›</button>
+    </div>
+  </div>
+</div>
+ 
+<!-- CONTENT -->
+<div class="content" id="mainContent">
+  <div class="loading"><div class="spinner"></div> Chargement des données...</div>
+</div>
+ 
+<script>
+// ─── CONFIG ───────────────────────────────────────────────
+const SUPABASE_URL = 'https://nnwvovoxdejjxlxlqqjv.supabase.co';
+// Remplace par ta clé anon Supabase
+const SUPABASE_KEY = 'REMPLACE_PAR_TA_CLE_ANON';
+ 
+// ─── STATE ────────────────────────────────────────────────
+let currentTab = 'hebdo';
+let currentWeek = getCurrentWeek();
+let allDispatched = [];
+let allDelivered = [];
+let allConsumed = [];
+let allStock12h30 = [];
+ 
+// ─── UTILS ────────────────────────────────────────────────
+function getCurrentWeek() {
+  const now = new Date();
+  const start = new Date(now.getFullYear(), 0, 1);
+  const diff = now - start;
+  const oneWeek = 7 * 24 * 60 * 60 * 1000;
+  return Math.ceil((diff + start.getDay() * 24 * 60 * 60 * 1000) / oneWeek);
+}
+ 
+function fmt(n, decimals = 0) {
+  if (n === null || n === undefined || isNaN(n)) return '—';
+  return new Intl.NumberFormat('fr-FR', {
+    minimumFractionDigits: decimals,
+    maximumFractionDigits: decimals
+  }).format(n);
+}
+ 
+function fmtEuro(n) {
+  if (n === null || n === undefined || isNaN(n)) return '—';
+  return new Intl.NumberFormat('fr-FR', {
+    style: 'currency', currency: 'EUR',
+    minimumFractionDigits: 0, maximumFractionDigits: 0
+  }).format(n);
+}
+ 
+function fmtPct(n) {
+  if (n === null || n === undefined || isNaN(n) || !isFinite(n)) return '—';
+  return fmt(n * 100, 1) + '%';
+}
+ 
+function pctClass(n) {
+  if (!n || !isFinite(n)) return '';
+  if (n < 0.10) return 'badge-green';
+  if (n < 0.20) return 'badge-orange';
+  return 'badge-red';
+}
+ 
+// ─── API ──────────────────────────────────────────────────
+async function fetchAll(table, select = '*') {
+  const url = `${SUPABASE_URL}/rest/v1/${table}?select=${select}&limit=100000`;
+  const r = await fetch(url, {
+    headers: {
+      'apikey': SUPABASE_KEY,
+      'Authorization': `Bearer ${SUPABASE_KEY}`
+    }
+  });
+  if (!r.ok) throw new Error(`Erreur ${table}: ${r.status}`);
+  return r.json();
+}
+ 
+// ─── FILTER LOGIC ─────────────────────────────────────────
+function filterRows(rows, siteVal, catVal, dateField = 'date') {
+  return rows.filter(r => {
+    const siteOk = siteVal === 'all' || r.site === siteVal || r.site_name === siteVal;
+    const catOk = catVal === 'EPD' ? r.epd === 'EPD' : r.category2 === catVal;
+    return siteOk && catOk;
+  });
+}
+ 
+function getSite() { return document.getElementById('siteFilter').value; }
+function getCat() { return document.getElementById('catFilter').value; }
+ 
+// ─── LOAD DATA ────────────────────────────────────────────
+async function loadData() {
+  try {
+    document.getElementById('mainContent').innerHTML =
+      '<div class="loading"><div class="spinner"></div> Chargement des données...</div>';
+ 
+    [allDispatched, allDelivered, allConsumed, allStock12h30] = await Promise.all([
+      fetchAll('dispatched'),
+      fetchAll('delivered'),
+      fetchAll('consumed'),
+      fetchAll('stock_12h30')
+    ]);
+ 
+    // Populate site filter
+    const sites = [...new Set([
+      ...allDispatched.map(r => r.site),
+      ...allDelivered.map(r => r.site_name),
+    ].filter(Boolean))].sort();
+ 
+    const siteSelect = document.getElementById('siteFilter');
+    sites.forEach(s => {
+      const opt = document.createElement('option');
+      opt.value = s;
+      opt.textContent = s;
+      siteSelect.appendChild(opt);
+    });
+ 
+    // Get weeks
+    const weeks = [...new Set(allDispatched.map(r => r.week_number).filter(Boolean))].sort((a, b) => a - b);
+    if (weeks.length > 0) currentWeek = weeks[weeks.length - 1];
+ 
+    // Sync info
+    document.getElementById('syncInfo').textContent = `Sync auto · ${new Date().toLocaleDateString('fr-FR')}`;
+ 
+    renderCurrentView();
+  } catch (e) {
+    document.getElementById('mainContent').innerHTML =
+      `<div class="error-box">❌ Erreur de connexion à Supabase<br><br>${e.message}<br><br>Vérifie que ta clé SUPABASE_KEY est correcte dans le fichier index.html</div>`;
+  }
+}
+ 
+// ─── WEEKLY VIEW ──────────────────────────────────────────
+function renderHebdo() {
+  const site = getSite();
+  const cat = getCat();
+ 
+  const disp = filterRows(allDispatched, site, cat);
+  const deliv = filterRows(allDelivered.map(r => ({...r, site: r.site_name})), site, cat);
+  const conso = filterRows(allConsumed, site, cat);
+  const stock = filterRows(allStock12h30, site, cat);
+ 
+  // Group by week
+  const weeks = [...new Set([
+    ...disp.map(r => r.week_number),
+    ...deliv.map(r => r.week_number),
+    ...conso.map(r => r.week_number),
+  ].filter(Boolean))].sort((a, b) => a - b);
+ 
+  if (weeks.length === 0) {
+    document.getElementById('mainContent').innerHTML =
+      '<div class="empty"><div class="empty-icon">🔍</div>Aucune donnée pour ces filtres</div>';
+    return;
+  }
+ 
+  // Aggregate by week
+  function aggByWeek(rows, qtyField, valField) {
+    const m = {};
+    rows.forEach(r => {
+      const w = r.week_number;
+      if (!w) return;
+      if (!m[w]) m[w] = { qty: 0, val: 0 };
+      m[w].qty += (r[qtyField] || 0);
+      m[w].val += (r[valField] || 0);
+    });
+    return m;
+  }
+ 
+  function aggProteinByWeek(rows, qtyField) {
+    const m = {};
+    rows.forEach(r => {
+      const w = r.week_number;
+      if (!w || !r.protein_type) return;
+      if (!m[w]) m[w] = { total: 0, Poisson: 0, Viande: 0, Végétarien: 0, Volaille: 0 };
+      m[w].total += (r[qtyField] || 0);
+      if (m[w][r.protein_type] !== undefined)
+        m[w][r.protein_type] += (r[qtyField] || 0);
+    });
+    return m;
+  }
+ 
+  function aggStockByWeek(rows) {
+    const m = {};
+    const counts = {};
+    rows.forEach(r => {
+      const w = r.week_number;
+      if (!w) return;
+      if (!m[w]) { m[w] = 0; counts[w] = 0; }
+      m[w] += (r.quantity || 0);
+      counts[w]++;
+    });
+    const avg = {};
+    Object.keys(m).forEach(w => avg[w] = counts[w] > 0 ? m[w] / counts[w] : 0);
+    return avg;
+  }
+ 
+  const dAgg = aggByWeek(disp, 'quantity', 'value');
+  const lvAgg = aggByWeek(deliv, 'quantity_detected', 'value');
+  const coAgg = aggByWeek(conso, 'quantity', 'value');
+  const lvProt = aggProteinByWeek(deliv, 'quantity_detected');
+  const coProt = aggProteinByWeek(conso, 'quantity');
+  const stAgg = aggStockByWeek(stock);
+ 
+  // Build table
+  let html = '<div class="table-wrapper"><table><thead><tr>';
+  html += '<th>Indicateur</th>';
+  weeks.forEach(w => html += `<th>S${w}</th>`);
+  html += '</tr></thead><tbody>';
+ 
+  function row(label, fn, cls = '', isSection = false, isGachis = false) {
+    const trClass = isSection ? 'row-section' : isGachis ? 'row-gachis' : '';
+    html += `<tr class="${trClass}"><td>${label}</td>`;
+    weeks.forEach(w => {
+      const val = fn(w);
+      html += `<td class="${cls}">${val}</td>`;
+    });
+    html += '</tr>';
+  }
+ 
+  // DISPATCHÉ
+  row('DISPATCHÉ', () => '', '', true);
+  row('Dispatché (unités)', w => fmt(dAgg[w]?.qty));
+  row('Valo PAHT€', w => fmtEuro(dAgg[w]?.val));
+ 
+  // LIVRÉ
+  row('LIVRÉ', () => '', '', true);
+  row('Livré (unités)', w => fmt(lvAgg[w]?.qty));
+  row('Valo PAHT€', w => fmtEuro(lvAgg[w]?.val));
+  row('% vs dispatch', w => {
+    const pct = dAgg[w]?.qty > 0 ? (lvAgg[w]?.qty || 0) / dAgg[w].qty : null;
+    return `<span class="${pct > 1 ? 'badge-orange' : ''}">${fmtPct(pct)}</span>`;
+  });
+  ['Poisson','Viande','Végétarien','Volaille'].forEach(p => {
+    row(p + ' %', w => {
+      const d = lvProt[w];
+      if (!d || d.total === 0) return '—';
+      return fmtPct((d[p] || 0) / d.total);
+    });
+  });
+ 
+  // CONSOMMÉ
+  row('CONSOMMÉ', () => '', '', true);
+  row('Consommé (unités)', w => fmt(coAgg[w]?.qty));
+  row('Valo PAHT€', w => fmtEuro(coAgg[w]?.val));
+  ['Poisson','Viande','Végétarien','Volaille'].forEach(p => {
+    row(p + ' %', w => {
+      const d = coProt[w];
+      if (!d || d.total === 0) return '—';
+      return fmtPct((d[p] || 0) / d.total);
+    });
+  });
+ 
+  // STOCK
+  row('STOCK', () => '', '', true);
+  row('Stock moy / réf 12h30', w => fmt(stAgg[w], 1));
+ 
+  // GÂCHIS
+  row('GÂCHIS', () => '', '', true);
+  row('Gâchis #', w => {
+    const g = (dAgg[w]?.qty || 0) - (lvAgg[w]?.qty || 0);
+    return fmt(g);
+  }, '', false, true);
+  row('Valo gâchis €', w => {
+    const g = (dAgg[w]?.val || 0) - (lvAgg[w]?.val || 0);
+    return fmtEuro(g);
+  }, '', false, true);
+  row('Gâchis %', w => {
+    const g = dAgg[w]?.qty > 0
+      ? ((dAgg[w].qty - (lvAgg[w]?.qty || 0)) / dAgg[w].qty)
+      : null;
+    return `<span class="${pctClass(g)}">${fmtPct(g)}</span>`;
+  }, '', false, true);
+ 
+  html += '</tbody></table></div>';
+  document.getElementById('mainContent').innerHTML = html;
+}
+ 
+// ─── DAILY VIEW ───────────────────────────────────────────
+function renderQuotidien() {
+  const site = getSite();
+  const cat = getCat();
+  const week = currentWeek;
+ 
+  document.getElementById('weekLabel').textContent = `S${week}`;
+ 
+  const days = ['Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi','Dimanche'];
+  const dayMap = { lundi:0, mardi:1, mercredi:2, jeudi:3, vendredi:4, samedi:5, dimanche:6 };
+ 
+  function filterWeek(rows, siteField = 'site') {
+    return rows.filter(r => {
+      const siteOk = site === 'all' || r[siteField] === site;
+      const catOk = cat === 'EPD' ? r.epd === 'EPD' : r.category2 === cat;
+      const weekOk = r.week_number === week;
+      return siteOk && catOk && weekOk;
+    });
+  }
+ 
+  const disp = filterWeek(allDispatched);
+  const deliv = filterWeek(allDelivered.map(r => ({...r, site: r.site_name})));
+  const conso = filterWeek(allConsumed);
+  const stock = filterWeek(allStock12h30);
+ 
+  function aggByDay(rows, qtyField, valField) {
+    const m = Array(7).fill(null).map(() => ({ qty: 0, val: 0 }));
+    rows.forEach(r => {
+      const idx = dayMap[(r.day_name || '').toLowerCase()];
+      if (idx === undefined) return;
+      m[idx].qty += (r[qtyField] || 0);
+      m[idx].val += (r[valField] || 0);
+    });
+    return m;
+  }
+ 
+  function aggStockByDay(rows) {
+    const totals = Array(7).fill(0);
+    const counts = Array(7).fill(0);
+    rows.forEach(r => {
+      const idx = dayMap[(r.day_name || '').toLowerCase()];
+      if (idx === undefined) return;
+      totals[idx] += (r.quantity || 0);
+      counts[idx]++;
+    });
+    return totals.map((t, i) => counts[i] > 0 ? t / counts[i] : 0);
+  }
+ 
+  const dAgg = aggByDay(disp, 'quantity', 'value');
+  const lvAgg = aggByDay(deliv, 'quantity_detected', 'value');
+  const coAgg = aggByDay(conso, 'quantity', 'value');
+  const stAgg = aggStockByDay(stock);
+ 
+  const totalDisp = dAgg.reduce((s, r) => s + r.qty, 0);
+  const totalLiv = lvAgg.reduce((s, r) => s + r.qty, 0);
+  const totalConso = coAgg.reduce((s, r) => s + r.qty, 0);
+  const gachis = totalLiv - totalConso;
+  const gachisVal = lvAgg.reduce((s, r) => s + r.val, 0) - coAgg.reduce((s, r) => s + r.val, 0);
+  const gachisPct = totalLiv > 0 ? gachis / totalLiv : null;
+ 
+  let html = `
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-label">Dispatché S${week}</div>
+      <div class="stat-value">${fmt(totalDisp)}</div>
+      <div class="stat-sub">${fmtEuro(dAgg.reduce((s,r)=>s+r.val,0))}</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Livré S${week}</div>
+      <div class="stat-value">${fmt(totalLiv)}</div>
+      <div class="stat-sub">${fmtEuro(lvAgg.reduce((s,r)=>s+r.val,0))}</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Consommé S${week}</div>
+      <div class="stat-value">${fmt(totalConso)}</div>
+      <div class="stat-sub">${fmtEuro(coAgg.reduce((s,r)=>s+r.val,0))}</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Gâchis S${week}</div>
+      <div class="stat-value ${pctClass(gachisPct)}">${fmtPct(gachisPct)}</div>
+      <div class="stat-sub">${fmtEuro(gachisVal)} · ${fmt(gachis)} unités</div>
+    </div>
+  </div>
+  <div class="table-wrapper"><table><thead><tr>
+    <th>Indicateur</th>`;
+ 
+  days.forEach(d => html += `<th>${d}</th>`);
+  html += '<th>Total</th></tr></thead><tbody>';
+ 
+  function rowD(label, vals, totalVal, cls = '', isSection = false, isGachis = false) {
+    const trClass = isSection ? 'row-section' : isGachis ? 'row-gachis' : '';
+    html += `<tr class="${trClass}"><td>${label}</td>`;
+    vals.forEach(v => html += `<td class="${cls}">${v}</td>`);
+    html += `<td class="${cls}"><strong>${totalVal}</strong></td></tr>`;
+  }
+ 
+  // DISPATCHÉ
+  rowD('DISPATCHÉ', Array(7).fill(''), '', '', true);
+  rowD('Dispatché (unités)',
+    dAgg.map(r => fmt(r.qty)),
+    fmt(totalDisp)
+  );
+  rowD('Valo PAHT€',
+    dAgg.map(r => fmtEuro(r.val)),
+    fmtEuro(dAgg.reduce((s,r)=>s+r.val,0))
+  );
+ 
+  // LIVRÉ
+  rowD('LIVRÉ', Array(7).fill(''), '', '', true);
+  rowD('Livré (unités)',
+    lvAgg.map(r => fmt(r.qty)),
+    fmt(totalLiv)
+  );
+  rowD('Valo PAHT€',
+    lvAgg.map(r => fmtEuro(r.val)),
+    fmtEuro(lvAgg.reduce((s,r)=>s+r.val,0))
+  );
+  rowD('% vs dispatch',
+    lvAgg.map((r, i) => {
+      const p = dAgg[i].qty > 0 ? r.qty / dAgg[i].qty : null;
+      return `<span class="${p > 1 ? 'badge-orange' : ''}">${fmtPct(p)}</span>`;
+    }),
+    fmtPct(totalDisp > 0 ? totalLiv / totalDisp : null)
+  );
+ 
+  // CONSOMMÉ
+  rowD('CONSOMMÉ', Array(7).fill(''), '', '', true);
+  rowD('Consommé (unités)',
+    coAgg.map(r => fmt(r.qty)),
+    fmt(totalConso)
+  );
+  rowD('Valo PAHT€',
+    coAgg.map(r => fmtEuro(r.val)),
+    fmtEuro(coAgg.reduce((s,r)=>s+r.val,0))
+  );
+ 
+  // STOCK
+  rowD('STOCK', Array(7).fill(''), '', '', true);
+  rowD('Stock moy 12h30',
+    stAgg.map(v => fmt(v, 1)),
+    fmt(stAgg.reduce((s,v)=>s+v,0) / 7, 1)
+  );
+ 
+  // GÂCHIS
+  rowD('GÂCHIS', Array(7).fill(''), '', '', true);
+  const gachisJ = lvAgg.map((r,i) => r.qty - coAgg[i].qty);
+  const gachisValJ = lvAgg.map((r,i) => r.val - coAgg[i].val);
+  const gachisPctJ = lvAgg.map((r,i) => r.qty > 0 ? (r.qty - coAgg[i].qty) / r.qty : null);
+ 
+  rowD('Gâchis #',
+    gachisJ.map(g => fmt(g)),
+    fmt(gachis),
+    '', false, true
+  );
+  rowD('Valo gâchis €',
+    gachisValJ.map(g => fmtEuro(g)),
+    fmtEuro(gachisVal),
+    '', false, true
+  );
+  rowD('Gâchis %',
+    gachisPctJ.map(p => `<span class="${pctClass(p)}">${fmtPct(p)}</span>`),
+    `<span class="${pctClass(gachisPct)}">${fmtPct(gachisPct)}</span>`,
+    '', false, true
+  );
+ 
+  html += '</tbody></table></div>';
+  document.getElementById('mainContent').innerHTML = html;
+}
+ 
+// ─── NAVIGATION ───────────────────────────────────────────
+function switchTab(tab) {
+  currentTab = tab;
+  document.querySelectorAll('.tab').forEach((t, i) => {
+    t.classList.toggle('active', (i === 0 && tab === 'hebdo') || (i === 1 && tab === 'quotidien'));
+  });
+  document.getElementById('weekFilterGroup').classList.toggle('hidden', tab === 'hebdo');
+  renderCurrentView();
+}
+ 
+function changeWeek(delta) {
+  currentWeek += delta;
+  if (currentWeek < 1) currentWeek = 52;
+  if (currentWeek > 52) currentWeek = 1;
+  renderQuotidien();
+}
+ 
+function applyFilters() { renderCurrentView(); }
+ 
+function renderCurrentView() {
+  if (currentTab === 'hebdo') renderHebdo();
+  else renderQuotidien();
+}
+ 
+// ─── INIT ─────────────────────────────────────────────────
+loadData();
+</script>
+</body>
+</html>
+ 
