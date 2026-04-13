@@ -12,7 +12,7 @@ SUPABASE_KEY = os.environ["SUPABASE_KEY"].strip()
 
 # Période : 90 derniers jours
 END_DATE = date.today()
-START_DATE = END_DATE - timedelta(days=90)
+START_DATE = date(2025, 1, 1)  # Depuis début 2025
 print(f"📅 Période : {START_DATE} → {END_DATE}")
 
 FRENCH_MONTHS = {
@@ -204,20 +204,19 @@ def params_livraison():
     ]
 
 def params_stock(heure):
-    """Question 1682 - paramètres: DATE_RANGE.start, DATE_RANGE.end, HEURE, EMPLACEMENT"""
     return [
         {
-            "type": "date/single",
-            "target": ["dimension", ["template-tag", "DATE_RANGE.start"]],
+            "type": "text",
+            "target": ["variable", ["template-tag", "DATE_RANGE.start"]],
             "value": str(START_DATE)
         },
         {
-            "type": "date/single",
-            "target": ["dimension", ["template-tag", "DATE_RANGE.end"]],
+            "type": "text", 
+            "target": ["variable", ["template-tag", "DATE_RANGE.end"]],
             "value": str(END_DATE)
         },
         {
-            "type": "category",
+            "type": "text",
             "target": ["variable", ["template-tag", "HEURE"]],
             "value": heure
         }
