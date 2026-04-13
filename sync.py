@@ -4,58 +4,56 @@ from datetime import datetime, date, timedelta
 import re
 import json
 
-# ─── CONFIG ───────────────────────────────────────────────
 METABASE_URL = os.environ["METABASE_URL"].strip()
 METABASE_EMAIL = os.environ["METABASE_EMAIL"].strip()
 METABASE_PASSWORD = os.environ["METABASE_PASSWORD"].strip()
 SUPABASE_URL = os.environ["SUPABASE_URL"].strip()
 SUPABASE_KEY = os.environ["SUPABASE_KEY"].strip()
 
-# Stratégie : on récupère seulement les 8 derniers jours
-# (pour capter la semaine en cours + un peu de marge)
-# Au premier import manuel, mettre FULL_IMPORT = True
-FULL_IMPORT = False
+# FULL_IMPORT = True  → vide tout et réimporte depuis le 1er jan 2026
+# FULL_IMPORT = False → ajoute seulement les 8 derniers jours (mode nuit auto)
+FULL_IMPORT = True
 FULL_START = date(2026, 1, 1)
 
 END_DATE = date.today()
 START_DATE = FULL_START if FULL_IMPORT else (END_DATE - timedelta(days=8))
-print(f"📅 Mode : {'COMPLET' if FULL_IMPORT else 'INCRÉMENTAL'}")
+
+print(f"📅 Mode : {'COMPLET depuis ' + str(FULL_START) if FULL_IMPORT else 'INCRÉMENTAL 8 jours'}")
 print(f"📅 Période : {START_DATE} → {END_DATE}")
 
 FRENCH_MONTHS = {
-    "janvier":1,"février":2,"mars":3,"avril":4,"mai":5,"juin":6,
-    "juillet":7,"août":8,"septembre":9,"octobre":10,"novembre":11,"décembre":12
+    "janvier": 1, "février": 2, "mars": 3, "avril": 4,
+    "mai": 5, "juin": 6, "juillet": 7, "août": 8,
+    "septembre": 9, "octobre": 10, "novembre": 11, "décembre": 12
 }
-FRENCH_DAYS = ["lundi","mardi","mercredi","jeudi","vendredi","samedi","dimanche"]
-
-# ─── HELPERS ──────────────────────────────────────────────
+FRENCH_DAYS = ["lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi", "dimanche"]
 
 def parse_french_date(s):
     if not s: return None
     s = str(s).strip().strip('"')
     m = re.match(r"(\d+)\s+(\w+),\s*(\d{4}),?\s*(\d{2}):(\d{2})", s)
     if m:
-        day,ms,year,hour,minute = m.groups()
+        day, ms, year, hour, minute = m.groups()
         mo = FRENCH_MONTHS.get(ms.lower())
-        if mo: return datetime(int(year),mo,int(day),int(hour),int(minute))
+        if mo: return datetime(int(year), mo, int(day), int(hour), int(minute))
     m = re.match(r"(\d{1,2})/(\d{1,2})/(\d{4})", s)
     if m:
-        day,month,year = m.groups()
-        return datetime(int(year),int(month),int(day))
+        day, month, year = m.groups()
+        return datetime(int(year), int(month), int(day))
     m = re.match(r"(\d+)\s+(\w+),\s*(\d{4})", s)
     if m:
-        day,ms,year = m.groups()
+        day, ms, year = m.groups()
         mo = FRENCH_MONTHS.get(ms.lower())
-        if mo: return datetime(int(year),mo,int(day))
+        if mo: return datetime(int(year), mo, int(day))
     m = re.match(r"(\d{4})-(\d{2})-(\d{2})", s)
     if m:
-        year,month,day = m.groups()
-        return datetime(int(year),int(month),int(day))
+        year, month, day = m.groups()
+        return datetime(int(year), int(month), int(day))
     return None
 
 def parse_number(s):
     if s is None or s == "": return None
-    try: return float(str(s).replace(",","."))
+    try: return float(str(s).replace(",", "."))
     except: return None
 
 def iso_week(dt):
@@ -72,14 +70,12 @@ def french_day(dt):
 
 def category2(product_name, category):
     name = (product_name or "").lower()
-    if any(x in name for x in ["cookie","yaourt brassé","mousse au chocolat"]):
+    if any(x in name for x in ["cookie", "yaourt brassé", "mousse au chocolat"]):
         return "Permanent"
     return category or ""
 
 def epd_flag(cat2):
-    return "EPD" if cat2 in ["Starter","Snacking","Dish","Dessert"] else ""
-
-# ─── SUPABASE ─────────────────────────────────────────────
+    return "EPD" if cat2 in ["Starter", "Snacking", "Dish", "Dessert"] else ""
 
 def supa_headers():
     return {
@@ -89,13 +85,15 @@ def supa_headers():
         "Prefer": "return=minimal"
     }
 
+def truncate_all():
+    tables = ["dispatched", "delivered", "consumed", "stock_12h30", "stock_6h", "delivery_proofs", "import_logs"]
+    for t in tables:
+        r = requests.delete(f"{SUPABASE_URL}/rest/v1/{t}?id=gte.0", headers=supa_headers())
+        print(f"  🗑️  {t} vidée (status: {r.status_code})")
+
 def delete_since(table, date_col, since_date):
-    """Supprime les lignes depuis une date pour éviter les doublons sur réimport"""
-    r = requests.delete(
-        f"{SUPABASE_URL}/rest/v1/{table}?{date_col}=gte.{since_date}",
-        headers=supa_headers()
-    )
-    print(f"  🗑️  Supprimé lignes {table} depuis {since_date}: {r.status_code}")
+    r = requests.delete(f"{SUPABASE_URL}/rest/v1/{table}?{date_col}=gte.{since_date}", headers=supa_headers())
+    print(f"  🗑️  {table} depuis {since_date} (status: {r.status_code})")
 
 def insert(table, rows):
     if not rows:
@@ -104,13 +102,9 @@ def insert(table, rows):
     batch_size = 500
     total = 0
     for i in range(0, len(rows), batch_size):
-        batch = rows[i:i+batch_size]
-        r = requests.post(
-            f"{SUPABASE_URL}/rest/v1/{table}",
-            headers=supa_headers(),
-            json=batch
-        )
-        if r.status_code not in [200,201]:
+        batch = rows[i:i + batch_size]
+        r = requests.post(f"{SUPABASE_URL}/rest/v1/{table}", headers=supa_headers(), json=batch)
+        if r.status_code not in [200, 201]:
             print(f"  ❌ Erreur Supabase {table}: {r.status_code} {r.text[:200]}")
             return total
         total += len(batch)
@@ -119,47 +113,23 @@ def insert(table, rows):
     print(f"  ✅ {total} lignes insérées dans {table}")
     return total
 
-def truncate_all():
-    for t in ["dispatched","delivered","consumed","stock_12h30","stock_6h","delivery_proofs"]:
-        requests.delete(
-            f"{SUPABASE_URL}/rest/v1/{t}?id=gte.0",
-            headers=supa_headers()
-        )
-        print(f"  🗑️  {t} vidée")
-
 def log_import(data_type, row_count, status="success"):
     requests.post(
         f"{SUPABASE_URL}/rest/v1/import_logs",
         headers=supa_headers(),
-        json=[{
-            "data_type": data_type,
-            "imported_at": datetime.utcnow().isoformat(),
-            "row_count": row_count,
-            "status": status
-        }]
+        json=[{"data_type": data_type, "imported_at": datetime.utcnow().isoformat(), "row_count": row_count, "status": status}]
     )
-
-# ─── METABASE ─────────────────────────────────────────────
 
 def metabase_token():
     print("🔐 Connexion à Metabase...")
-    r = requests.post(
-        f"{METABASE_URL}/api/session",
-        json={"username":METABASE_EMAIL,"password":METABASE_PASSWORD},
-        timeout=30
-    )
+    r = requests.post(f"{METABASE_URL}/api/session", json={"username": METABASE_EMAIL, "password": METABASE_PASSWORD}, timeout=30)
     r.raise_for_status()
     print("  ✅ Connecté")
     return r.json()["id"]
 
 def fetch_question(token, question_id, params=None):
     headers = {"X-Metabase-Session": token, "Content-Type": "application/json"}
-    r = requests.post(
-        f"{METABASE_URL}/api/card/{question_id}/query/json",
-        headers=headers,
-        json={"parameters": params or []},
-        timeout=600
-    )
+    r = requests.post(f"{METABASE_URL}/api/card/{question_id}/query/json", headers=headers, json={"parameters": params or []}, timeout=600)
     if r.status_code != 200:
         print(f"  ❌ Erreur Metabase {question_id}: {r.status_code} {r.text[:400]}")
         return []
@@ -169,26 +139,26 @@ def fetch_question(token, question_id, params=None):
         print(f"  ❌ Réponse inattendue: {str(data)[:300]}")
         return []
     except json.JSONDecodeError:
-        print(f"  ⚠️  JSON partiel, récupération partielle...")
+        print(f"  ⚠️  JSON partiel détecté, récupération partielle...")
         try:
             text = r.text
             last = text.rfind('},')
             if last > 0:
-                data = json.loads(text[:last+1] + ']')
-                print(f"  ⚠️  {len(data)} lignes récupérées (partiel)")
+                data = json.loads(text[:last + 1] + ']')
+                print(f"  ⚠️  {len(data)} lignes récupérées (JSON partiel)")
                 return data
         except: pass
         return []
 
-def date_range_param(tag_name, start, end):
-    """Paramètre date/range au format YYYY-MM-DD~YYYY-MM-DD"""
-    return {
-        "type": "date/range",
-        "target": ["dimension", ["template-tag", tag_name]],
-        "value": f"{start}~{end}"
-    }
+def param_date_range(tag_name, start, end):
+    return {"type": "date/range", "target": ["dimension", ["template-tag", tag_name]], "value": f"{start}~{end}"}
 
-# ─── TRANSFORMATIONS ──────────────────────────────────────
+def params_stock(heure, start, end):
+    return [
+        {"type": "date/single", "target": ["dimension", ["template-tag", "DATE_RANGE.start"]], "value": str(start)},
+        {"type": "date/single", "target": ["dimension", ["template-tag", "DATE_RANGE.end"]], "value": str(end)},
+        {"type": "category", "target": ["variable", ["template-tag", "HEURE"]], "value": heure}
+    ]
 
 def transform_dispatched(rows):
     out = []
@@ -200,14 +170,7 @@ def transform_dispatched(rows):
         cat2 = category2(pname, cat)
         qty = int(parse_number(r.get("Quantités dispatchées") or 0) or 0)
         cost = parse_number(r.get("PA Produit"))
-        out.append({
-            "date": dt.date().isoformat(),
-            "site": r.get("Emplacement") or r.get("emplacement"),
-            "category": cat, "product_name": pname, "quantity": qty,
-            "unit_cost": cost, "week_number": iso_week(dt), "year": dt.year,
-            "category2": cat2, "epd": epd_flag(cat2),
-            "value": round((qty or 0)*(cost or 0),4), "day_name": french_day(dt),
-        })
+        out.append({"date": dt.date().isoformat(), "site": r.get("Emplacement") or r.get("emplacement"), "category": cat, "product_name": pname, "quantity": qty, "unit_cost": cost, "week_number": iso_week(dt), "year": dt.year, "category2": cat2, "epd": epd_flag(cat2), "value": round((qty or 0) * (cost or 0), 4), "day_name": french_day(dt)})
     return out
 
 def transform_consumed(rows):
@@ -220,16 +183,7 @@ def transform_consumed(rows):
         cat2 = category2(pname, cat)
         qty = int(parse_number(r.get("Nombre de consommations") or 0) or 0)
         cost = parse_number(r.get("PA Produit"))
-        out.append({
-            "week_number": int(parse_number(r.get("n° semaine") or iso_week(dt) or 0) or 0),
-            "year": dt.year, "date": dt.date().isoformat(),
-            "site": r.get("Emplacement") or r.get("emplacement"),
-            "product_name": pname, "category": cat,
-            "protein_type": r.get("Type") or r.get("type"),
-            "quantity": qty, "unit_cost": cost, "category2": cat2,
-            "epd": epd_flag(cat2), "value": round((qty or 0)*(cost or 0),4),
-            "day_name": french_day(dt),
-        })
+        out.append({"week_number": int(parse_number(r.get("n° semaine") or iso_week(dt) or 0) or 0), "year": dt.year, "date": dt.date().isoformat(), "site": r.get("Emplacement") or r.get("emplacement"), "product_name": pname, "category": cat, "protein_type": r.get("Type") or r.get("type"), "quantity": qty, "unit_cost": cost, "category2": cat2, "epd": epd_flag(cat2), "value": round((qty or 0) * (cost or 0), 4), "day_name": french_day(dt)})
     return out
 
 def transform_delivered(rows):
@@ -243,17 +197,7 @@ def transform_delivered(rows):
         cat2 = category2(pname, cat)
         qty = int(parse_number(r.get("nombre de produit livré détecté") or 0) or 0)
         cost = parse_number(r.get("PA Produit"))
-        out.append({
-            "delivery_date": dt.date().isoformat(),
-            "site_name": r.get("nom de l'emplacement"),
-            "fridge_name": r.get("nom du frigo"),
-            "product_category": cat, "unit_cost": cost, "product_name": pname,
-            "protein_type": r.get("Type") or r.get("type"),
-            "dlc_date": dlc.date().isoformat() if dlc else None,
-            "quantity_detected": qty, "category2": cat2, "epd": epd_flag(cat2),
-            "value": round((qty or 0)*(cost or 0),4),
-            "week_number": iso_week(dt), "year": dt.year, "day_name": french_day(dt),
-        })
+        out.append({"delivery_date": dt.date().isoformat(), "site_name": r.get("nom de l'emplacement"), "fridge_name": r.get("nom du frigo"), "product_category": cat, "unit_cost": cost, "product_name": pname, "protein_type": r.get("Type") or r.get("type"), "dlc_date": dlc.date().isoformat() if dlc else None, "quantity_detected": qty, "category2": cat2, "epd": epd_flag(cat2), "value": round((qty or 0) * (cost or 0), 4), "week_number": iso_week(dt), "year": dt.year, "day_name": french_day(dt)})
     return out
 
 def transform_stock(rows):
@@ -266,14 +210,7 @@ def transform_stock(rows):
         pname = r.get("Nom du produit") or ""
         cat2 = category2(pname, cat)
         qty = int(parse_number(r.get("nombre de produit") or 0) or 0)
-        out.append({
-            "timestamp": ts.isoformat(), "site": r.get("Nom de l'emplacement"),
-            "category": cat, "product_name": pname, "quantity": qty,
-            "dlc_date": dlc.date().isoformat() if dlc else None,
-            "category2": cat2, "epd": epd_flag(cat2),
-            "week_number": iso_week(ts), "year": ts.year,
-            "day_name": french_day(ts), "dlc_day_name": french_day(dlc),
-        })
+        out.append({"timestamp": ts.isoformat(), "site": r.get("Nom de l'emplacement"), "category": cat, "product_name": pname, "quantity": qty, "dlc_date": dlc.date().isoformat() if dlc else None, "category2": cat2, "epd": epd_flag(cat2), "week_number": iso_week(ts), "year": ts.year, "day_name": french_day(ts), "dlc_day_name": french_day(dlc)})
     return out
 
 def transform_proofs(rows):
@@ -285,15 +222,8 @@ def transform_proofs(rows):
         key = f"{dt.date()}_{site}"
         if key in seen: continue
         seen.add(key)
-        out.append({
-            "date": dt.date().isoformat(), "site": site,
-            "preparation_url": r.get("Préparation") or r.get("preparation"),
-            "delivery_url": r.get("Livraison") or r.get("livraison"),
-            "week_number": iso_week(dt), "year": dt.year, "day_name": french_day(dt),
-        })
+        out.append({"date": dt.date().isoformat(), "site": site, "preparation_url": r.get("Préparation") or r.get("preparation"), "delivery_url": r.get("Livraison") or r.get("livraison"), "week_number": iso_week(dt), "year": dt.year, "day_name": french_day(dt)})
     return out
-
-# ─── MAIN ─────────────────────────────────────────────────
 
 def main():
     print("🚀 Démarrage synchronisation Metabase → Supabase")
@@ -302,10 +232,10 @@ def main():
     token = metabase_token()
 
     if FULL_IMPORT:
-        print("🗑️  Import complet — vidage des tables...")
+        print("🗑️  Import complet — vidage de toutes les tables...")
         truncate_all()
     else:
-        print(f"♻️  Import incrémental — suppression des données depuis {START_DATE}...")
+        print(f"♻️  Import incrémental — suppression depuis {START_DATE}...")
         delete_since("dispatched", "date", START_DATE)
         delete_since("delivered", "delivery_date", START_DATE)
         delete_since("consumed", "date", START_DATE)
@@ -314,100 +244,68 @@ def main():
         delete_since("delivery_proofs", "date", START_DATE)
     print()
 
-    # Paramètre de date commun
-    date_range = f"{START_DATE}~{END_DATE}"
-
-    # ── Dispatché ──
+    # Dispatché
     print("📦 Dispatché (1684)...")
     try:
-        params = [date_range_param("Date", START_DATE, END_DATE)]
-        rows = fetch_question(token, 1684, params)
+        rows = fetch_question(token, 1684, [param_date_range("Date", START_DATE, END_DATE)])
         print(f"  {len(rows)} lignes reçues")
-        data = transform_dispatched(rows)
-        n = insert("dispatched", data)
+        n = insert("dispatched", transform_dispatched(rows))
         log_import("dispatched", n)
     except Exception as e:
-        print(f"  ❌ {e}")
-        log_import("dispatched", 0, "error")
+        print(f"  ❌ {e}"); log_import("dispatched", 0, "error")
 
-    # ── Consommé ──
+    # Consommé
     print("🍽️  Consommé (1683)...")
     try:
-        params = [date_range_param("DATE", START_DATE, END_DATE)]
-        rows = fetch_question(token, 1683, params)
+        rows = fetch_question(token, 1683, [param_date_range("DATE", START_DATE, END_DATE)])
         print(f"  {len(rows)} lignes reçues")
-        data = transform_consumed(rows)
-        n = insert("consumed", data)
+        n = insert("consumed", transform_consumed(rows))
         log_import("consumed", n)
     except Exception as e:
-        print(f"  ❌ {e}")
-        log_import("consumed", 0, "error")
+        print(f"  ❌ {e}"); log_import("consumed", 0, "error")
 
-    # ── Livré ──
+    # Livré
     print("🚚 Livré (1687)...")
     try:
-        params = [date_range_param("DATE", START_DATE, END_DATE)]
-        rows = fetch_question(token, 1687, params)
+        rows = fetch_question(token, 1687, [param_date_range("DATE", START_DATE, END_DATE)])
         print(f"  {len(rows)} lignes reçues")
-        data = transform_delivered(rows)
-        n = insert("delivered", data)
+        n = insert("delivered", transform_delivered(rows))
         log_import("delivered", n)
     except Exception as e:
-        print(f"  ❌ {e}")
-        log_import("delivered", 0, "error")
+        print(f"  ❌ {e}"); log_import("delivered", 0, "error")
 
-    # ── Stock 12h30 — sans filtre de date (la requête ne l'accepte pas) ──
-    # On utilise le CSV exporté manuellement depuis Metabase
-    # TODO: trouver le bon format de paramètre pour DATE_RANGE
-    print("📊 Stock 12h30 (1682) — tentative sans filtre de date...")
+    # Stock 12h30
+    print("📊 Stock 12h30 (1682)...")
     try:
-        params = [
-            {"type":"category","target":["variable",["template-tag","HEURE"]],"value":"12:31"}
-        ]
-        rows = fetch_question(token, 1682, params)
+        rows = fetch_question(token, 1682, params_stock("12:31", START_DATE, END_DATE))
         print(f"  {len(rows)} lignes reçues")
-        if rows:
-            data = transform_stock(rows)
-            n = insert("stock_12h30", data)
-            log_import("stock_12h30", n)
-        else:
-            log_import("stock_12h30", 0, "skipped")
+        n = insert("stock_12h30", transform_stock(rows))
+        log_import("stock_12h30", n)
     except Exception as e:
-        print(f"  ❌ {e}")
-        log_import("stock_12h30", 0, "error")
+        print(f"  ❌ {e}"); log_import("stock_12h30", 0, "error")
 
-    # ── Stock 6h ──
+    # Stock 6h
     print("📊 Stock 6h (1682)...")
     try:
-        params = [
-            {"type":"category","target":["variable",["template-tag","HEURE"]],"value":"06:01"}
-        ]
-        rows = fetch_question(token, 1682, params)
+        rows = fetch_question(token, 1682, params_stock("06:01", START_DATE, END_DATE))
         print(f"  {len(rows)} lignes reçues")
-        if rows:
-            data = transform_stock(rows)
-            n = insert("stock_6h", data)
-            log_import("stock_6h", n)
-        else:
-            log_import("stock_6h", 0, "skipped")
+        n = insert("stock_6h", transform_stock(rows))
+        log_import("stock_6h", n)
     except Exception as e:
-        print(f"  ❌ {e}")
-        log_import("stock_6h", 0, "error")
+        print(f"  ❌ {e}"); log_import("stock_6h", 0, "error")
 
-    # ── Preuves ──
-    print("📸 Preuves (1673)...")
+    # Preuves
+    print("📸 Preuves livraison (1673)...")
     try:
-        params = [date_range_param("Date", START_DATE, END_DATE)]
-        rows = fetch_question(token, 1673, params)
+        rows = fetch_question(token, 1673, [param_date_range("Date", START_DATE, END_DATE)])
         print(f"  {len(rows)} lignes reçues")
-        data = transform_proofs(rows)
-        n = insert("delivery_proofs", data)
+        n = insert("delivery_proofs", transform_proofs(rows))
         log_import("delivery_proofs", n)
     except Exception as e:
-        print(f"  ❌ {e}")
-        log_import("delivery_proofs", 0, "error")
+        print(f"  ❌ {e}"); log_import("delivery_proofs", 0, "error")
 
     print("\n✅ Synchronisation terminée !")
+    print(f"   {datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')} UTC")
 
 if __name__ == "__main__":
     main()
