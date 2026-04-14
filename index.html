@@ -5,71 +5,117 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Dashboard Livraison & Gâchis — Popchef</title>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   :root {
     --aubergine: #631248;
-    --aubergine-light: #7d1a5c;
     --aubergine-dark: #4a0d36;
     --beurre: #FCF7E2;
-    --beurre-dark: #f0e8c4;
-    --epinard: #074741;
     --tangerine: #EE3932;
+    --epinard: #074741;
     --fusain: #212721;
     --blanc: #ffffff;
-    --text: #212721;
     --muted: #7a6e6e;
     --border: rgba(99,18,72,0.15);
     --sans: 'Montserrat', sans-serif;
     --mono: 'IBM Plex Mono', monospace;
   }
   * { margin:0; padding:0; box-sizing:border-box; }
-  body { background:var(--beurre); color:var(--text); font-family:var(--sans); font-size:13px; min-height:100vh; }
- 
+  body { background:var(--beurre); color:var(--fusain); font-family:var(--sans); font-size:13px; min-height:100vh; }
+
+  /* ── AUTH ── */
+  #authScreen {
+    min-height:100vh; display:flex; align-items:center; justify-content:center;
+    background: linear-gradient(135deg, var(--aubergine-dark) 0%, var(--aubergine) 100%);
+  }
+  .auth-box {
+    background:var(--blanc); border-radius:12px; padding:48px 40px;
+    width:100%; max-width:420px; box-shadow:0 20px 60px rgba(0,0,0,0.3);
+  }
+  .auth-logo { text-align:center; margin-bottom:32px; }
+  .auth-logo-text { font-size:28px; font-weight:800; color:var(--aubergine); text-transform:uppercase; }
+  .auth-logo-text span { font-weight:300; }
+  .auth-logo-sub { font-size:11px; color:var(--muted); font-family:var(--mono); text-transform:uppercase; letter-spacing:1px; margin-top:4px; }
+  .auth-title { font-size:16px; font-weight:700; color:var(--fusain); margin-bottom:24px; text-align:center; }
+  .auth-input {
+    width:100%; padding:12px 14px; border:1.5px solid var(--border);
+    border-radius:6px; font-family:var(--sans); font-size:13px;
+    background:var(--beurre); margin-bottom:12px; outline:none;
+    transition:border-color 0.2s;
+  }
+  .auth-input:focus { border-color:var(--aubergine); }
+  .auth-btn {
+    width:100%; padding:13px; background:var(--aubergine); color:var(--beurre);
+    border:none; border-radius:6px; font-family:var(--sans); font-size:13px;
+    font-weight:700; cursor:pointer; transition:background 0.2s; text-transform:uppercase;
+    letter-spacing:0.5px; margin-top:4px;
+  }
+  .auth-btn:hover { background:var(--aubergine-dark); }
+  .auth-btn:disabled { opacity:0.6; cursor:not-allowed; }
+  .auth-link { text-align:center; margin-top:16px; font-size:12px; color:var(--muted); }
+  .auth-link a { color:var(--aubergine); cursor:pointer; font-weight:600; text-decoration:none; }
+  .auth-msg { padding:10px 14px; border-radius:6px; font-size:12px; margin-bottom:12px; font-family:var(--mono); }
+  .auth-msg.error { background:rgba(238,57,50,0.1); color:var(--tangerine); border:1px solid rgba(238,57,50,0.3); }
+  .auth-msg.success { background:rgba(7,71,65,0.1); color:var(--epinard); border:1px solid rgba(7,71,65,0.3); }
+  .auth-divider { border:none; border-top:1px solid var(--border); margin:16px 0; }
+
+  /* ── APP ── */
+  #appScreen { display:none; }
+
   .header { background:var(--aubergine); padding:0 32px; display:flex; align-items:center; justify-content:space-between; height:60px; }
+  .header-left { display:flex; align-items:center; }
   .logo-text { font-size:20px; font-weight:800; color:var(--beurre); letter-spacing:-0.5px; text-transform:uppercase; }
   .logo-text span { font-weight:300; }
   .header-divider { width:1px; height:24px; background:rgba(252,247,226,0.3); margin:0 16px; }
   .header-subtitle { font-size:11px; font-weight:500; color:rgba(252,247,226,0.7); text-transform:uppercase; letter-spacing:1.5px; font-family:var(--mono); }
-  .header-left { display:flex; align-items:center; }
-  .sync-badge { display:flex; align-items:center; gap:6px; background:rgba(252,247,226,0.1); border:1px solid rgba(252,247,226,0.2); border-radius:20px; padding:4px 12px; font-size:11px; color:rgba(252,247,226,0.8); font-family:var(--mono); }
+  .header-right { display:flex; align-items:center; gap:16px; }
+  .user-badge { font-size:11px; color:rgba(252,247,226,0.6); font-family:var(--mono); }
+  .logout-btn { background:rgba(252,247,226,0.1); border:1px solid rgba(252,247,226,0.2); color:rgba(252,247,226,0.8); padding:5px 12px; border-radius:4px; cursor:pointer; font-size:11px; font-family:var(--mono); transition:all 0.2s; }
+  .logout-btn:hover { background:rgba(252,247,226,0.2); }
+  .sync-badge { display:flex; align-items:center; gap:6px; font-size:11px; color:rgba(252,247,226,0.6); font-family:var(--mono); }
   .sync-dot { width:6px; height:6px; background:#22c55e; border-radius:50%; animation:pulse 2s infinite; }
   @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
- 
+
   .tabs { background:var(--aubergine-dark); padding:0 32px; display:flex; border-bottom:1px solid rgba(252,247,226,0.1); }
   .tab { padding:12px 20px; font-size:12px; font-weight:600; color:rgba(252,247,226,0.5); cursor:pointer; border-bottom:2px solid transparent; transition:all 0.2s; text-transform:uppercase; letter-spacing:0.8px; }
   .tab.active { color:var(--beurre); border-bottom-color:var(--beurre); }
   .tab:hover:not(.active) { color:rgba(252,247,226,0.8); }
- 
-  .filters { background:var(--blanc); border-bottom:2px solid var(--border); padding:14px 32px; display:flex; align-items:center; gap:24px; flex-wrap:wrap; }
-  .filter-group { display:flex; align-items:center; gap:10px; }
+
+  .filters { background:var(--blanc); border-bottom:2px solid var(--border); padding:12px 32px; display:flex; align-items:center; gap:20px; flex-wrap:wrap; }
+  .filter-group { display:flex; align-items:center; gap:8px; }
   .filter-label { font-size:10px; font-weight:700; color:var(--aubergine); text-transform:uppercase; letter-spacing:1.5px; font-family:var(--mono); }
-  .filter-select { background:var(--beurre); border:1.5px solid var(--border); color:var(--text); padding:7px 14px; border-radius:4px; font-size:12px; font-family:var(--sans); font-weight:600; cursor:pointer; outline:none; transition:border-color 0.2s; min-width:220px; }
+  .filter-select { background:var(--beurre); border:1.5px solid var(--border); color:var(--fusain); padding:6px 12px; border-radius:4px; font-size:12px; font-family:var(--sans); font-weight:600; cursor:pointer; outline:none; transition:border-color 0.2s; min-width:180px; }
   .filter-select:focus { border-color:var(--aubergine); }
- 
-  .content { padding:28px 32px; overflow-x:auto; }
- 
+
+  .content { padding:24px 32px; overflow-x:auto; }
+
   .loading { display:flex; align-items:center; justify-content:center; height:300px; color:var(--muted); gap:12px; font-family:var(--mono); font-size:13px; }
   .spinner { width:22px; height:22px; border:2px solid var(--border); border-top-color:var(--aubergine); border-radius:50%; animation:spin 0.8s linear infinite; }
   @keyframes spin { to { transform:rotate(360deg); } }
- 
-  .table-wrapper { overflow-x:auto; border-radius:8px; border:1.5px solid var(--border); box-shadow:0 2px 12px rgba(99,18,72,0.08); background:var(--blanc); margin-bottom:32px; }
+
+  .table-wrapper { overflow-x:auto; border-radius:8px; border:1.5px solid var(--border); box-shadow:0 2px 12px rgba(99,18,72,0.08); background:var(--blanc); margin-bottom:28px; }
   table { border-collapse:collapse; width:100%; min-width:800px; }
-  th,td { padding:9px 14px; text-align:right; white-space:nowrap; border-bottom:1px solid var(--border); font-size:12px; }
-  th:first-child,td:first-child { text-align:left; position:sticky; left:0; background:var(--blanc); z-index:10; min-width:220px; font-weight:600; }
+  th, td { padding:9px 14px; text-align:right; white-space:nowrap; border-bottom:1px solid var(--border); font-size:12px; }
+  th:first-child, td:first-child {
+    text-align:left; position:sticky; left:0; z-index:10;
+    background:var(--blanc); min-width:220px; font-weight:600;
+    /* Fix: bordure droite pour séparer du contenu */
+    border-right:2px solid var(--border);
+    box-shadow:2px 0 4px rgba(99,18,72,0.06);
+  }
   thead th { background:var(--aubergine); color:var(--beurre); font-family:var(--mono); font-size:11px; font-weight:500; text-transform:uppercase; letter-spacing:0.5px; border-bottom:none; }
   thead th:first-child { background:var(--aubergine); color:var(--beurre); }
   tbody tr:last-child td { border-bottom:none; }
   tbody tr:hover td { background:rgba(99,18,72,0.03); }
   tbody tr:hover td:first-child { background:rgba(99,18,72,0.05); }
- 
-  .row-section td { background:var(--aubergine) !important; color:var(--beurre) !important; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:1.5px; font-family:var(--mono); padding:5px 14px; border-bottom:none; }
+
+  .row-section td { background:var(--aubergine) !important; color:var(--beurre) !important; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:1.5px; font-family:var(--mono); padding:5px 14px; border-bottom:none; border-right-color:rgba(252,247,226,0.2) !important; }
   .row-gachis td { background:rgba(99,18,72,0.06) !important; font-weight:700; }
   .row-gachis td:first-child { background:rgba(99,18,72,0.08) !important; color:var(--aubergine); }
- 
+
   .c-green { color:#15803d; font-weight:700; }
-  .c-orange { color:#c2410c; font-weight:700; }
   .c-red { color:var(--tangerine); font-weight:700; }
- 
+
   .stats-row { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:16px; margin-bottom:24px; }
   .stat-card { background:var(--blanc); border:1.5px solid var(--border); border-radius:8px; padding:20px; box-shadow:0 2px 8px rgba(99,18,72,0.06); }
   .stat-card.highlight { background:var(--aubergine); border-color:var(--aubergine); }
@@ -79,102 +125,308 @@
   .stat-card.highlight .stat-value { color:var(--beurre); }
   .stat-sub { font-size:11px; color:var(--muted); margin-top:6px; font-family:var(--mono); }
   .stat-card.highlight .stat-sub { color:rgba(252,247,226,0.5); }
- 
+
   .week-nav { display:flex; align-items:center; gap:4px; background:var(--beurre); border:1.5px solid var(--border); border-radius:4px; padding:3px; }
   .week-btn { background:none; border:none; color:var(--aubergine); cursor:pointer; padding:4px 12px; border-radius:3px; font-size:16px; font-weight:700; transition:all 0.15s; }
   .week-btn:hover { background:var(--aubergine); color:var(--beurre); }
   .week-label { font-family:var(--mono); font-size:13px; font-weight:700; padding:4px 10px; min-width:60px; text-align:center; color:var(--aubergine); }
- 
-  .empty { text-align:center; padding:80px 20px; color:var(--muted); font-family:var(--mono); font-size:13px; }
-  .empty-icon { font-size:48px; margin-bottom:16px; }
-  .hidden { display:none !important; }
-  .error-box { background:rgba(238,57,50,0.08); border:1.5px solid rgba(238,57,50,0.3); border-radius:8px; padding:20px; color:var(--tangerine); font-family:var(--mono); font-size:12px; margin:20px 0; }
- 
-  /* PREUVES */
-  .section-title { font-size:13px; font-weight:700; color:var(--aubergine); text-transform:uppercase; letter-spacing:1px; margin-bottom:16px; font-family:var(--mono); padding-top:8px; border-top:2px solid var(--border); margin-top:32px; padding-top:24px; }
-  .proofs-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:16px; }
+
+  .section-title { font-size:12px; font-weight:700; color:var(--aubergine); text-transform:uppercase; letter-spacing:1px; font-family:var(--mono); padding:24px 0 16px; border-top:2px solid var(--border); margin-top:8px; }
+  .proofs-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:16px; }
   .proof-card { background:var(--blanc); border:1.5px solid var(--border); border-radius:8px; overflow:hidden; box-shadow:0 2px 8px rgba(99,18,72,0.06); }
   .proof-header { background:var(--aubergine); padding:10px 14px; display:flex; justify-content:space-between; align-items:center; }
-  .proof-site { font-size:11px; font-weight:700; color:var(--beurre); text-transform:uppercase; letter-spacing:0.5px; }
+  .proof-site { font-size:11px; font-weight:700; color:var(--beurre); text-transform:uppercase; letter-spacing:0.5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:160px; }
   .proof-date { font-size:10px; color:rgba(252,247,226,0.6); font-family:var(--mono); }
   .proof-imgs { display:grid; grid-template-columns:1fr 1fr; gap:8px; padding:12px; }
-  .proof-img-wrap { position:relative; }
   .proof-img-label { font-size:9px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:4px; font-family:var(--mono); }
-  .proof-img { width:100%; height:100px; object-fit:cover; border-radius:4px; border:1px solid var(--border); cursor:pointer; transition:opacity 0.2s; }
+  .proof-img { width:100%; height:90px; object-fit:cover; border-radius:4px; border:1px solid var(--border); cursor:pointer; transition:opacity 0.2s; display:block; }
   .proof-img:hover { opacity:0.85; }
-  .proof-missing { width:100%; height:100px; background:var(--beurre); border:1.5px dashed var(--border); border-radius:4px; display:flex; align-items:center; justify-content:center; color:var(--muted); font-size:20px; }
+  .proof-missing { width:100%; height:90px; background:var(--beurre); border:1.5px dashed var(--border); border-radius:4px; display:flex; align-items:center; justify-content:center; color:var(--muted); font-size:20px; }
+
+  .empty { text-align:center; padding:60px 20px; color:var(--muted); font-family:var(--mono); font-size:13px; }
+  .empty-icon { font-size:40px; margin-bottom:16px; }
+  .hidden { display:none !important; }
+  .error-box { background:rgba(238,57,50,0.08); border:1.5px solid rgba(238,57,50,0.3); border-radius:8px; padding:16px; color:var(--tangerine); font-family:var(--mono); font-size:12px; margin:20px 0; }
 </style>
 </head>
 <body>
- 
-<div class="header">
-  <div class="header-left">
-    <div class="logo-text"><span>POP</span>CHEF</div>
-    <div class="header-divider"></div>
-    <div class="header-subtitle">Dashboard Livraison & Gâchis</div>
-  </div>
-  <div class="sync-badge">
-    <div class="sync-dot"></div>
-    <span id="syncInfo">Chargement...</span>
-  </div>
-</div>
- 
-<div class="tabs">
-  <div class="tab active" onclick="switchTab('hebdo')">📅 Suivi Hebdomadaire</div>
-  <div class="tab" onclick="switchTab('quotidien')">📆 Suivi Quotidien</div>
-</div>
- 
-<div class="filters">
-  <div class="filter-group">
-    <span class="filter-label">Client :</span>
-    <select class="filter-select" id="siteFilter" onchange="applyFilters()">
-      <option value="all">Emplacement (tous)</option>
-    </select>
-  </div>
-  <div class="filter-group">
-    <span class="filter-label">Catégorie :</span>
-    <select class="filter-select" id="catFilter" onchange="applyFilters()">
-      <option value="EPD">TOTAL (EPD)</option>
-      <option value="Dish">Dish</option>
-      <option value="Starter">Starter</option>
-      <option value="Snacking">Snacking</option>
-      <option value="Dessert">Dessert</option>
-    </select>
-  </div>
-  <div class="filter-group hidden" id="weekFilterGroup">
-    <span class="filter-label">Semaine :</span>
-    <div class="week-nav">
-      <button class="week-btn" onclick="changeWeek(-1)">‹</button>
-      <span class="week-label" id="weekLabel">S1</span>
-      <button class="week-btn" onclick="changeWeek(1)">›</button>
+
+<!-- ── AUTH SCREEN ── -->
+<div id="authScreen">
+  <div class="auth-box">
+    <div class="auth-logo">
+      <div class="auth-logo-text"><span>POP</span>CHEF</div>
+      <div class="auth-logo-sub">Dashboard Livraison & Gâchis</div>
+    </div>
+
+    <!-- LOGIN -->
+    <div id="loginForm">
+      <div class="auth-title">Connexion</div>
+      <div id="loginMsg"></div>
+      <input class="auth-input" type="email" id="loginEmail" placeholder="votre@popchef.com" autocomplete="email">
+      <input class="auth-input" type="password" id="loginPassword" placeholder="Mot de passe" autocomplete="current-password">
+      <button class="auth-btn" onclick="login()">Se connecter</button>
+      <div class="auth-link">
+        <a onclick="showForgot()">Mot de passe oublié ?</a>
+        &nbsp;·&nbsp;
+        <a onclick="showRegister()">Créer un compte</a>
+      </div>
+    </div>
+
+    <!-- REGISTER -->
+    <div id="registerForm" class="hidden">
+      <div class="auth-title">Créer un compte</div>
+      <div id="registerMsg"></div>
+      <input class="auth-input" type="email" id="regEmail" placeholder="votre@popchef.com" autocomplete="email">
+      <input class="auth-input" type="password" id="regPassword" placeholder="Choisir un mot de passe (min. 8 car.)" autocomplete="new-password">
+      <input class="auth-input" type="password" id="regPassword2" placeholder="Confirmer le mot de passe" autocomplete="new-password">
+      <button class="auth-btn" onclick="register()">Créer mon compte</button>
+      <div class="auth-link"><a onclick="showLogin()">← Retour à la connexion</a></div>
+    </div>
+
+    <!-- FORGOT -->
+    <div id="forgotForm" class="hidden">
+      <div class="auth-title">Réinitialiser le mot de passe</div>
+      <div id="forgotMsg"></div>
+      <input class="auth-input" type="email" id="forgotEmail" placeholder="votre@popchef.com">
+      <button class="auth-btn" onclick="resetPassword()">Envoyer le lien</button>
+      <div class="auth-link"><a onclick="showLogin()">← Retour à la connexion</a></div>
+    </div>
+
+    <!-- CONFIRM EMAIL -->
+    <div id="confirmForm" class="hidden">
+      <div class="auth-title">✉️ Vérifiez votre email</div>
+      <p style="text-align:center;color:var(--muted);font-size:13px;line-height:1.6">
+        Un email de confirmation a été envoyé à votre adresse.<br>
+        Cliquez sur le lien dans l'email pour activer votre compte.
+      </p>
+      <br>
+      <div class="auth-link"><a onclick="showLogin()">← Retour à la connexion</a></div>
+    </div>
+
+    <!-- ACCOUNT SETTINGS (dans auth box, accessible depuis header) -->
+    <div id="accountForm" class="hidden">
+      <div class="auth-title">⚙️ Paramètres du compte</div>
+      <div id="accountMsg"></div>
+      <p style="font-size:12px;color:var(--muted);margin-bottom:16px;font-family:var(--mono)" id="accountEmail"></p>
+      <hr class="auth-divider">
+      <p style="font-size:12px;font-weight:700;margin-bottom:12px">Changer de mot de passe</p>
+      <input class="auth-input" type="password" id="newPassword" placeholder="Nouveau mot de passe">
+      <input class="auth-input" type="password" id="newPassword2" placeholder="Confirmer le nouveau mot de passe">
+      <button class="auth-btn" onclick="changePassword()">Mettre à jour</button>
+      <div class="auth-link"><a onclick="closeAccount()">← Retour au dashboard</a></div>
     </div>
   </div>
 </div>
- 
-<div class="content" id="mainContent">
-  <div class="loading"><div class="spinner"></div> Chargement des données Popchef...</div>
+
+<!-- ── APP SCREEN ── -->
+<div id="appScreen">
+  <div class="header">
+    <div class="header-left">
+      <div class="logo-text"><span>POP</span>CHEF</div>
+      <div class="header-divider"></div>
+      <div class="header-subtitle">Dashboard Livraison & Gâchis</div>
+    </div>
+    <div class="header-right">
+      <div class="sync-badge"><div class="sync-dot"></div><span id="syncInfo">...</span></div>
+      <div class="user-badge" id="userBadge"></div>
+      <button class="logout-btn" onclick="showAccount()">⚙️ Mon compte</button>
+      <button class="logout-btn" onclick="logout()">Déconnexion</button>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <div class="tab active" onclick="switchTab('hebdo')">📅 Suivi Hebdomadaire</div>
+    <div class="tab" onclick="switchTab('quotidien')">📆 Suivi Quotidien</div>
+  </div>
+
+  <div class="filters">
+    <div class="filter-group">
+      <span class="filter-label">Année :</span>
+      <select class="filter-select" id="yearFilter" onchange="onYearChange()" style="min-width:100px">
+        <option value="2026">2026</option>
+        <option value="2025">2025</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <span class="filter-label">Client :</span>
+      <select class="filter-select" id="siteFilter" onchange="applyFilters()">
+        <option value="all">Emplacement (tous)</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <span class="filter-label">Catégorie :</span>
+      <select class="filter-select" id="catFilter" onchange="applyFilters()">
+        <option value="EPD">TOTAL (EPD)</option>
+        <option value="Dish">Dish</option>
+        <option value="Starter">Starter</option>
+        <option value="Snacking">Snacking</option>
+        <option value="Dessert">Dessert</option>
+      </select>
+    </div>
+    <div class="filter-group hidden" id="weekFilterGroup">
+      <span class="filter-label">Semaine :</span>
+      <div class="week-nav">
+        <button class="week-btn" onclick="changeWeek(-1)">‹</button>
+        <span class="week-label" id="weekLabel">S1</span>
+        <button class="week-btn" onclick="changeWeek(1)">›</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="content" id="mainContent">
+    <div class="loading"><div class="spinner"></div> Chargement...</div>
+  </div>
 </div>
- 
+
 <script>
+// ─── SUPABASE ────────────────────────────────────────────
 const SUPABASE_URL = 'https://nnwvovoxdejjxlxlqqjv.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5ud3Zvdm94ZGVqanhseGxxcWp2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU5MTA5OTMsImV4cCI6MjA5MTQ4Njk5M30.otwWgQi5YFeYfsDUjRQPcFg2RqlZpgTyRvoOK4R-n5k';
- 
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+// ─── STATE ───────────────────────────────────────────────
 let currentTab = 'hebdo';
 let currentWeek = 1;
-let allDispatched = [], allDelivered = [], allConsumed = [], allStock12h30 = [], allProofs = [];
+let currentYear = new Date().getFullYear();
 let availableWeeks = [];
- 
-// ─── UTILS ────────────────────────────────────────────────
-function isoWeek(dateStr) {
-  if (!dateStr) return null;
-  const d = new Date(dateStr);
-  const tmp = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
-  const day = tmp.getUTCDay() || 7;
-  tmp.setUTCDate(tmp.getUTCDate() + 4 - day);
-  const y = new Date(Date.UTC(tmp.getUTCFullYear(), 0, 1));
-  return Math.ceil((((tmp - y) / 86400000) + 1) / 7);
+let allDispatched = [], allDelivered = [], allConsumed = [];
+let allStock12h30 = [], allStock6h = [], allProofs = [];
+let sitesLoaded = false;
+
+// ─── AUTH ────────────────────────────────────────────────
+function showLogin() {
+  ['loginForm','registerForm','forgotForm','confirmForm','accountForm'].forEach(id => {
+    document.getElementById(id).classList.add('hidden');
+  });
+  document.getElementById('loginForm').classList.remove('hidden');
 }
- 
+function showRegister() {
+  document.getElementById('loginForm').classList.add('hidden');
+  document.getElementById('registerForm').classList.remove('hidden');
+}
+function showForgot() {
+  document.getElementById('loginForm').classList.add('hidden');
+  document.getElementById('forgotForm').classList.remove('hidden');
+}
+function showAccount() {
+  document.getElementById('appScreen').style.display = 'none';
+  document.getElementById('authScreen').style.display = 'flex';
+  ['loginForm','registerForm','forgotForm','confirmForm'].forEach(id => {
+    document.getElementById(id).classList.add('hidden');
+  });
+  document.getElementById('accountForm').classList.remove('hidden');
+  sb.auth.getUser().then(({data}) => {
+    if (data?.user) document.getElementById('accountEmail').textContent = data.user.email;
+  });
+}
+function closeAccount() {
+  document.getElementById('authScreen').style.display = 'none';
+  document.getElementById('appScreen').style.display = 'block';
+}
+
+function msg(id, text, type='error') {
+  const el = document.getElementById(id);
+  el.innerHTML = `<div class="auth-msg ${type}">${text}</div>`;
+}
+
+async function login() {
+  const email = document.getElementById('loginEmail').value.trim();
+  const password = document.getElementById('loginPassword').value;
+  if (!email.endsWith('@popchef.com')) {
+    msg('loginMsg', '❌ Seuls les emails @popchef.com sont autorisés.');
+    return;
+  }
+  const btn = document.querySelector('#loginForm .auth-btn');
+  btn.disabled = true; btn.textContent = 'Connexion...';
+  const {error} = await sb.auth.signInWithPassword({email, password});
+  btn.disabled = false; btn.textContent = 'Se connecter';
+  if (error) {
+    msg('loginMsg', '❌ ' + (error.message === 'Invalid login credentials' ? 'Email ou mot de passe incorrect.' : error.message));
+  }
+}
+
+async function register() {
+  const email = document.getElementById('regEmail').value.trim();
+  const pwd = document.getElementById('regPassword').value;
+  const pwd2 = document.getElementById('regPassword2').value;
+  if (!email.endsWith('@popchef.com')) {
+    msg('registerMsg', '❌ Seuls les emails @popchef.com sont autorisés.');
+    return;
+  }
+  if (pwd.length < 8) { msg('registerMsg', '❌ Le mot de passe doit faire au moins 8 caractères.'); return; }
+  if (pwd !== pwd2) { msg('registerMsg', '❌ Les mots de passe ne correspondent pas.'); return; }
+  const btn = document.querySelector('#registerForm .auth-btn');
+  btn.disabled = true; btn.textContent = 'Création...';
+  const {error} = await sb.auth.signUp({
+    email, password: pwd,
+    options: { emailRedirectTo: window.location.href }
+  });
+  btn.disabled = false; btn.textContent = 'Créer mon compte';
+  if (error) {
+    msg('registerMsg', '❌ ' + error.message);
+  } else {
+    document.getElementById('registerForm').classList.add('hidden');
+    document.getElementById('confirmForm').classList.remove('hidden');
+  }
+}
+
+async function resetPassword() {
+  const email = document.getElementById('forgotEmail').value.trim();
+  if (!email.endsWith('@popchef.com')) {
+    msg('forgotMsg', '❌ Seuls les emails @popchef.com sont autorisés.');
+    return;
+  }
+  const {error} = await sb.auth.resetPasswordForEmail(email, {
+    redirectTo: window.location.href + '?reset=true'
+  });
+  if (error) {
+    msg('forgotMsg', '❌ ' + error.message);
+  } else {
+    msg('forgotMsg', '✅ Email envoyé ! Vérifiez votre boîte mail.', 'success');
+  }
+}
+
+async function changePassword() {
+  const pwd = document.getElementById('newPassword').value;
+  const pwd2 = document.getElementById('newPassword2').value;
+  if (pwd.length < 8) { msg('accountMsg', '❌ Minimum 8 caractères.'); return; }
+  if (pwd !== pwd2) { msg('accountMsg', '❌ Les mots de passe ne correspondent pas.'); return; }
+  const {error} = await sb.auth.updateUser({password: pwd});
+  if (error) { msg('accountMsg', '❌ ' + error.message); }
+  else { msg('accountMsg', '✅ Mot de passe mis à jour !', 'success'); }
+}
+
+async function logout() {
+  await sb.auth.signOut();
+}
+
+// Auth state listener
+sb.auth.onAuthStateChange((event, session) => {
+  if (event === 'SIGNED_IN' && session) {
+    document.getElementById('authScreen').style.display = 'none';
+    document.getElementById('appScreen').style.display = 'block';
+    document.getElementById('userBadge').textContent = session.user.email;
+    loadData();
+  } else if (event === 'SIGNED_OUT') {
+    document.getElementById('authScreen').style.display = 'flex';
+    document.getElementById('appScreen').style.display = 'none';
+    showLogin();
+  } else if (event === 'PASSWORD_RECOVERY') {
+    showAccount();
+  }
+});
+
+// Enter key support
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter') {
+    if (!document.getElementById('loginForm').classList.contains('hidden')) login();
+    else if (!document.getElementById('registerForm').classList.contains('hidden')) register();
+    else if (!document.getElementById('forgotForm').classList.contains('hidden')) resetPassword();
+  }
+});
+
+// ─── UTILS ───────────────────────────────────────────────
 function fmt(n, d=0) {
   if (n===null||n===undefined||isNaN(n)) return '—';
   return new Intl.NumberFormat('fr-FR',{minimumFractionDigits:d,maximumFractionDigits:d}).format(n);
@@ -188,37 +440,87 @@ function fmtPct(n) {
   return fmt(n*100,1)+'%';
 }
 function pctClass(n) {
-  if (!n||!isFinite(n)) return '';
-  if (n<0.10) return 'c-green';
-  if (n<0.20) return 'c-orange';
-  return 'c-red';
+  if (!n||!isFinite(n)||n<=0) return 'c-green';
+  if (n>0.20) return 'c-red';
+  return 'c-green';
 }
-function frDate(dateStr) {
-  if (!dateStr) return '';
-  return new Date(dateStr).toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit',year:'numeric'});
+function frDate(d) {
+  if (!d) return '';
+  return new Date(d).toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit'});
 }
- 
-// ─── API ──────────────────────────────────────────────────
-async function fetchTable(table, select='*') {
-  let all = [], offset = 0, limit = 1000;
+function getSite() { return document.getElementById('siteFilter').value; }
+function getCat() { return document.getElementById('catFilter').value; }
+function getYear() { return parseInt(document.getElementById('yearFilter').value); }
+
+// ─── DATA LOADING ────────────────────────────────────────
+async function fetchTable(table, yearCol, year) {
+  let all = [], from = 0, limit = 1000;
   while (true) {
-    const url = `${SUPABASE_URL}/rest/v1/${table}?select=${select}&limit=${limit}&offset=${offset}`;
-    const r = await fetch(url, {
-      headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Range-Unit': 'items' }
-    });
-    if (!r.ok) throw new Error(`Erreur ${table}: ${r.status} ${await r.text()}`);
-    const batch = await r.json();
-    all = all.concat(batch);
-    if (batch.length < limit) break;
-    offset += limit;
+    const {data, error} = await sb.from(table).select('*').eq(yearCol, year).range(from, from+limit-1);
+    if (error) throw new Error(`${table}: ${error.message}`);
+    all = all.concat(data);
+    if (data.length < limit) break;
+    from += limit;
   }
   return all;
 }
- 
-// ─── FILTERS ──────────────────────────────────────────────
-function getSite() { return document.getElementById('siteFilter').value; }
-function getCat() { return document.getElementById('catFilter').value; }
- 
+
+async function loadData() {
+  const year = getYear();
+  document.getElementById('mainContent').innerHTML =
+    '<div class="loading"><div class="spinner"></div> Chargement ' + year + '...</div>';
+
+  try {
+    [allDispatched, allDelivered, allConsumed, allStock12h30, allStock6h, allProofs] = await Promise.all([
+      fetchTable('dispatched', 'year', year),
+      fetchTable('delivered', 'year', year),
+      fetchTable('consumed', 'year', year),
+      fetchTable('stock_12h30', 'year', year),
+      fetchTable('stock_6h', 'year', year),
+      fetchTable('delivery_proofs', 'year', year),
+    ]);
+
+    // Populate sites (only once or on year change)
+    if (!sitesLoaded || true) {
+      const sites = [...new Set([
+        ...allDispatched.map(r=>r.site),
+        ...allDelivered.map(r=>r.site_name),
+      ].filter(Boolean))].sort();
+      const sel = document.getElementById('siteFilter');
+      const prev = sel.value;
+      sel.innerHTML = '<option value="all">Emplacement (tous)</option>';
+      sites.forEach(s => {
+        const o = document.createElement('option');
+        o.value = s; o.textContent = s;
+        if (s === prev) o.selected = true;
+        sel.appendChild(o);
+      });
+      sitesLoaded = true;
+    }
+
+    availableWeeks = [...new Set([
+      ...allDispatched.map(r=>r.week_number),
+      ...allDelivered.map(r=>r.week_number),
+      ...allConsumed.map(r=>r.week_number),
+    ].filter(Boolean))].sort((a,b)=>a-b);
+
+    currentWeek = availableWeeks[availableWeeks.length-1] || 1;
+    const total = allDispatched.length + allDelivered.length + allConsumed.length;
+    document.getElementById('syncInfo').textContent = `${total.toLocaleString('fr-FR')} lignes · ${new Date().toLocaleDateString('fr-FR')}`;
+
+    renderCurrentView();
+  } catch(e) {
+    document.getElementById('mainContent').innerHTML =
+      `<div class="error-box">❌ Erreur: ${e.message}</div>`;
+  }
+}
+
+function onYearChange() {
+  sitesLoaded = false;
+  loadData();
+}
+
+// ─── FILTER ──────────────────────────────────────────────
 function filterRows(rows, site, cat, siteField='site') {
   return rows.filter(r => {
     const sOk = site==='all' || r[siteField]===site;
@@ -226,98 +528,31 @@ function filterRows(rows, site, cat, siteField='site') {
     return sOk && cOk;
   });
 }
- 
-// ─── LOAD ─────────────────────────────────────────────────
-async function loadData() {
-  try {
-    document.getElementById('mainContent').innerHTML =
-      '<div class="loading"><div class="spinner"></div> Chargement des données Popchef...</div>';
- 
-    [allDispatched, allDelivered, allConsumed, allStock12h30, allProofs] = await Promise.all([
-      fetchTable('dispatched'),
-      fetchTable('delivered'),
-      fetchTable('consumed'),
-      fetchTable('stock_12h30'),
-      fetchTable('delivery_proofs'),
-    ]);
- 
-    console.log(`✅ Dispatched: ${allDispatched.length}, Delivered: ${allDelivered.length}, Consumed: ${allConsumed.length}, Stock: ${allStock12h30.length}, Proofs: ${allProofs.length}`);
- 
-    // Recalcul des week_number si manquants
-    allDispatched.forEach(r => { if (!r.week_number && r.date) r.week_number = isoWeek(r.date); });
-    allDelivered.forEach(r => { if (!r.week_number && r.delivery_date) r.week_number = isoWeek(r.delivery_date); });
-    allConsumed.forEach(r => { if (!r.week_number && r.date) r.week_number = isoWeek(r.date); });
-    allStock12h30.forEach(r => { if (!r.week_number && r.timestamp) r.week_number = isoWeek(r.timestamp); });
-    allProofs.forEach(r => { if (!r.week_number && r.date) r.week_number = isoWeek(r.date); });
- 
-    // Recalcul day_name si manquant
-    const days = ['dimanche','lundi','mardi','mercredi','jeudi','vendredi','samedi'];
-    const fixDay = (r, field) => {
-      if (!r.day_name && r[field]) r.day_name = days[new Date(r[field]).getDay()];
-    };
-    allDispatched.forEach(r => fixDay(r,'date'));
-    allDelivered.forEach(r => fixDay(r,'delivery_date'));
-    allConsumed.forEach(r => fixDay(r,'date'));
-    allStock12h30.forEach(r => fixDay(r,'timestamp'));
-    allProofs.forEach(r => fixDay(r,'date'));
- 
-    // Sites
-    const sites = [...new Set([
-      ...allDispatched.map(r=>r.site),
-      ...allDelivered.map(r=>r.site_name),
-    ].filter(Boolean))].sort();
-    const sel = document.getElementById('siteFilter');
-    sites.forEach(s => {
-      const o = document.createElement('option');
-      o.value = s; o.textContent = s;
-      sel.appendChild(o);
-    });
- 
-    // Semaines disponibles
-    availableWeeks = [...new Set([
-      ...allDispatched.map(r=>r.week_number),
-      ...allDelivered.map(r=>r.week_number),
-      ...allConsumed.map(r=>r.week_number),
-    ].filter(Boolean))].sort((a,b)=>a-b);
- 
-    currentWeek = availableWeeks[availableWeeks.length-1] || 1;
-    document.getElementById('syncInfo').textContent = `${allDispatched.length.toLocaleString('fr-FR')} lignes · ${new Date().toLocaleDateString('fr-FR')}`;
- 
-    renderCurrentView();
-  } catch(e) {
-    console.error(e);
-    document.getElementById('mainContent').innerHTML =
-      `<div class="error-box">❌ Erreur de connexion Supabase<br><br>${e.message}</div>`;
-  }
-}
- 
-// ─── HEBDO ────────────────────────────────────────────────
+
+// ─── HEBDO ───────────────────────────────────────────────
 function renderHebdo() {
-  const site = getSite(), cat = getCat();
- 
+  const site=getSite(), cat=getCat();
   const disp = filterRows(allDispatched, site, cat);
   const deliv = filterRows(allDelivered, site, cat, 'site_name');
   const conso = filterRows(allConsumed, site, cat);
-  const stock = filterRows(allStock12h30, site, cat);
- 
+  const stock12 = filterRows(allStock12h30, site, cat);
+
   const weeks = [...new Set([
     ...disp.map(r=>r.week_number),
     ...deliv.map(r=>r.week_number),
     ...conso.map(r=>r.week_number),
   ].filter(Boolean))].sort((a,b)=>a-b);
- 
+
   if (!weeks.length) {
-    document.getElementById('mainContent').innerHTML =
-      '<div class="empty"><div class="empty-icon">🔍</div>Aucune donnée pour ces filtres</div>';
+    document.getElementById('mainContent').innerHTML = '<div class="empty"><div class="empty-icon">🔍</div>Aucune donnée</div>';
     return;
   }
- 
+
   function agg(rows, qF, vF) {
     const m={};
     rows.forEach(r=>{const w=r.week_number;if(!w)return;if(!m[w])m[w]={qty:0,val:0};m[w].qty+=(Number(r[qF])||0);m[w].val+=(Number(r[vF])||0);});
     return m;
   }
- 
   function aggProt(rows, qF) {
     const m={};
     rows.forEach(r=>{
@@ -328,32 +563,31 @@ function renderHebdo() {
     });
     return m;
   }
- 
-  function aggStock(rows) {
+  function avgStock(rows) {
     const s={},c={};
     rows.forEach(r=>{const w=r.week_number;if(!w)return;if(!s[w]){s[w]=0;c[w]=0;}s[w]+=(Number(r.quantity)||0);c[w]++;});
-    const avg={};Object.keys(s).forEach(w=>avg[w]=c[w]>0?s[w]/c[w]:0);
-    return avg;
+    const a={};Object.keys(s).forEach(w=>a[w]=c[w]>0?s[w]/c[w]:0);
+    return a;
   }
- 
+
   const dA=agg(disp,'quantity','value');
   const lA=agg(deliv,'quantity_detected','value');
   const cA=agg(conso,'quantity','value');
   const lP=aggProt(deliv,'quantity_detected');
   const cP=aggProt(conso,'quantity');
-  const sA=aggStock(stock);
- 
+  const s12=avgStock(stock12);
+
   let html='<div class="table-wrapper"><table><thead><tr><th>Indicateur</th>';
   weeks.forEach(w=>html+=`<th>S${w}</th>`);
   html+='</tr></thead><tbody>';
- 
-  function row(label,fn,isSection=false,isGachis=false) {
+
+  function row(label, fn, isSection=false, isGachis=false) {
     const cls=isSection?'row-section':isGachis?'row-gachis':'';
     html+=`<tr class="${cls}"><td>${label}</td>`;
     weeks.forEach(w=>html+=`<td>${fn(w)}</td>`);
     html+='</tr>';
   }
- 
+
   row('Dispatché',()=>'',true);
   row('Dispatché (unités)',w=>fmt(dA[w]?.qty));
   row('Valo PAHT€',w=>fmtEuro(dA[w]?.val));
@@ -371,28 +605,28 @@ function renderHebdo() {
     row(p+' %',w=>{const d=cP[w];if(!d||d.total===0)return '—';return fmtPct((d[p]||0)/d.total);})
   );
   row('Stock',()=>'',true);
-  row('Stock moy / réf 12h30',w=>fmt(sA[w],1));
+  row('Stock moy / réf 12h30',w=>fmt(s12[w],1));
   row('Gâchis',()=>'',true);
-  row('Gâchis #',w=>fmt((dA[w]?.qty||0)-(lA[w]?.qty||0)),false,true);
-  row('Valo gâchis €',w=>fmtEuro((dA[w]?.val||0)-(lA[w]?.val||0)),false,true);
+  row('Gâchis #',w=>{const g=(lA[w]?.qty||0)-(cA[w]?.qty||0);return fmt(g);},false,true);
+  row('Valo gâchis €',w=>{const g=(lA[w]?.val||0)-(cA[w]?.val||0);return fmtEuro(g);},false,true);
   row('Gâchis %',w=>{
-    const g=dA[w]?.qty>0?((dA[w].qty-(lA[w]?.qty||0))/dA[w].qty):null;
+    const g=lA[w]?.qty>0?((lA[w].qty-(cA[w]?.qty||0))/lA[w].qty):null;
     return `<span class="${pctClass(g)}">${fmtPct(g)}</span>`;
   },false,true);
- 
+
   html+='</tbody></table></div>';
   document.getElementById('mainContent').innerHTML=html;
 }
- 
-// ─── QUOTIDIEN ────────────────────────────────────────────
+
+// ─── QUOTIDIEN ───────────────────────────────────────────
 function renderQuotidien() {
   const site=getSite(), cat=getCat(), week=currentWeek;
   document.getElementById('weekLabel').textContent=`S${week}`;
- 
+
   const DAYS=['lundi','mardi','mercredi','jeudi','vendredi','samedi','dimanche'];
   const DAYS_FR=['Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi','Dimanche'];
   const dayIdx={};DAYS.forEach((d,i)=>dayIdx[d]=i);
- 
+
   function fw(rows, sf='site') {
     return rows.filter(r=>{
       const sOk=site==='all'||r[sf]===site;
@@ -400,45 +634,40 @@ function renderQuotidien() {
       return sOk&&cOk&&r.week_number===week;
     });
   }
- 
+
   const disp=fw(allDispatched);
   const deliv=fw(allDelivered,'site_name');
   const conso=fw(allConsumed);
-  const stock=fw(allStock12h30);
+  const stock12=fw(allStock12h30);
+  const stock6=fw(allStock6h);
   const preuves=allProofs.filter(r=>{
     const sOk=site==='all'||r.site===site;
     return sOk&&r.week_number===week;
   });
- 
+
   function aggByDay(rows,qF,vF) {
     const m=Array(7).fill(null).map(()=>({qty:0,val:0}));
-    rows.forEach(r=>{
-      const i=dayIdx[(r.day_name||'').toLowerCase()];
-      if(i===undefined)return;
-      m[i].qty+=(Number(r[qF])||0);
-      m[i].val+=(Number(r[vF])||0);
-    });
+    rows.forEach(r=>{const i=dayIdx[(r.day_name||'').toLowerCase()];if(i===undefined)return;m[i].qty+=(Number(r[qF])||0);m[i].val+=(Number(r[vF])||0);});
     return m;
   }
- 
-  function avgStockByDay(rows) {
+  function avgByDay(rows) {
     const t=Array(7).fill(0),c=Array(7).fill(0);
     rows.forEach(r=>{const i=dayIdx[(r.day_name||'').toLowerCase()];if(i===undefined)return;t[i]+=(Number(r.quantity)||0);c[i]++;});
     return t.map((v,i)=>c[i]>0?v/c[i]:0);
   }
- 
+
   const dA=aggByDay(disp,'quantity','value');
   const lA=aggByDay(deliv,'quantity_detected','value');
   const cA=aggByDay(conso,'quantity','value');
-  const sA=avgStockByDay(stock);
- 
+  const s12=avgByDay(stock12);
+  const s6=avgByDay(stock6);
+
   const tD=dA.reduce((s,r)=>s+r.qty,0);
   const tL=lA.reduce((s,r)=>s+r.qty,0);
   const tC=cA.reduce((s,r)=>s+r.qty,0);
-  const gN=tL-tC;
-  const gV=lA.reduce((s,r)=>s+r.val,0)-cA.reduce((s,r)=>s+r.val,0);
+  const gN=tL-tC, gV=lA.reduce((s,r)=>s+r.val,0)-cA.reduce((s,r)=>s+r.val,0);
   const gP=tL>0?gN/tL:null;
- 
+
   let html=`
   <div class="stats-row">
     <div class="stat-card"><div class="stat-label">Dispatché S${week}</div><div class="stat-value">${fmt(tD)}</div><div class="stat-sub">${fmtEuro(dA.reduce((s,r)=>s+r.val,0))}</div></div>
@@ -447,17 +676,17 @@ function renderQuotidien() {
     <div class="stat-card highlight"><div class="stat-label">Gâchis S${week}</div><div class="stat-value">${fmtPct(gP)}</div><div class="stat-sub">${fmtEuro(gV)} · ${fmt(gN)} unités</div></div>
   </div>
   <div class="table-wrapper"><table><thead><tr><th>Indicateur</th>`;
- 
+
   DAYS_FR.forEach(d=>html+=`<th>${d}</th>`);
   html+='<th>Total</th></tr></thead><tbody>';
- 
+
   function rowD(label,vals,tot,isSection=false,isGachis=false) {
     const cls=isSection?'row-section':isGachis?'row-gachis':'';
     html+=`<tr class="${cls}"><td>${label}</td>`;
     vals.forEach(v=>html+=`<td>${v}</td>`);
     html+=`<td><strong>${tot}</strong></td></tr>`;
   }
- 
+
   rowD('Dispatché',Array(7).fill(''),'',true);
   rowD('Dispatché (unités)',dA.map(r=>fmt(r.qty)),fmt(tD));
   rowD('Valo PAHT€',dA.map(r=>fmtEuro(r.val)),fmtEuro(dA.reduce((s,r)=>s+r.val,0)));
@@ -469,60 +698,46 @@ function renderQuotidien() {
   rowD('Consommé (unités)',cA.map(r=>fmt(r.qty)),fmt(tC));
   rowD('Valo PAHT€',cA.map(r=>fmtEuro(r.val)),fmtEuro(cA.reduce((s,r)=>s+r.val,0)));
   rowD('Stock',Array(7).fill(''),'',true);
-  rowD('Stock moy 12h30',sA.map(v=>fmt(v,1)),fmt(sA.reduce((s,v)=>s+v,0)/7,1));
+  rowD('Stock début de shift (6h)',s6.map(v=>fmt(v,1)),fmt(s6.reduce((a,v)=>a+v,0)/7,1));
+  rowD('Stock moy / réf 12h30',s12.map(v=>fmt(v,1)),fmt(s12.reduce((a,v)=>a+v,0)/7,1));
   rowD('Gâchis',Array(7).fill(''),'',true);
   rowD('Gâchis #',lA.map((r,i)=>fmt(r.qty-cA[i].qty)),fmt(gN),false,true);
   rowD('Valo gâchis €',lA.map((r,i)=>fmtEuro(r.val-cA[i].val)),fmtEuro(gV),false,true);
   rowD('Gâchis %',lA.map((r,i)=>{const p=r.qty>0?(r.qty-cA[i].qty)/r.qty:null;return `<span class="${pctClass(p)}">${fmtPct(p)}</span>`;}),`<span class="${pctClass(gP)}">${fmtPct(gP)}</span>`,false,true);
- 
+
   html+='</tbody></table></div>';
- 
-  // PREUVES DE LIVRAISON
+
+  // Preuves
   if (preuves.length > 0) {
-    // Dédupliquer par date+site
-    const seen = new Set();
-    const unique = preuves.filter(r => {
-      const k=`${r.date}_${r.site}`;
-      if(seen.has(k))return false;
-      seen.add(k);return true;
-    });
- 
-    html+='<div class="section-title">📸 Preuves de livraison & préparation</div>';
-    html+='<div class="proofs-grid">';
- 
-    unique.sort((a,b)=>new Date(a.date)-new Date(b.date)).forEach(r=>{
+    const sorted = preuves.sort((a,b)=>new Date(a.date)-new Date(b.date));
+    html+='<div class="section-title">📸 Preuves de livraison & préparation</div><div class="proofs-grid">';
+    sorted.forEach(r=>{
       html+=`<div class="proof-card">
         <div class="proof-header">
           <span class="proof-site">${r.site||'—'}</span>
           <span class="proof-date">${frDate(r.date)}</span>
         </div>
         <div class="proof-imgs">
-          <div class="proof-img-wrap">
+          <div>
             <div class="proof-img-label">Préparation</div>
-            ${r.preparation_url
-              ? `<img class="proof-img" src="${r.preparation_url}" alt="Préparation" onclick="window.open('${r.preparation_url}','_blank')" onerror="this.parentNode.innerHTML='<div class=proof-missing>📷</div>'">`
-              : '<div class="proof-missing">📷</div>'}
+            ${r.preparation_url?`<img class="proof-img" src="${r.preparation_url}" loading="lazy" onclick="window.open('${r.preparation_url}','_blank')" onerror="this.outerHTML='<div class=proof-missing>📷</div>'">`:'<div class="proof-missing">📷</div>'}
           </div>
-          <div class="proof-img-wrap">
+          <div>
             <div class="proof-img-label">Livraison</div>
-            ${r.delivery_url
-              ? `<img class="proof-img" src="${r.delivery_url}" alt="Livraison" onclick="window.open('${r.delivery_url}','_blank')" onerror="this.parentNode.innerHTML='<div class=proof-missing>🚚</div>'">`
-              : '<div class="proof-missing">🚚</div>'}
+            ${r.delivery_url?`<img class="proof-img" src="${r.delivery_url}" loading="lazy" onclick="window.open('${r.delivery_url}','_blank')" onerror="this.outerHTML='<div class=proof-missing>🚚</div>'">`:'<div class="proof-missing">🚚</div>'}
           </div>
         </div>
       </div>`;
     });
- 
     html+='</div>';
   } else {
-    html+=`<div class="section-title">📸 Preuves de livraison & préparation</div>
-    <div class="empty" style="padding:40px 20px"><div class="empty-icon">📷</div>Aucune preuve pour S${week}${site!=='all'?' · '+site:''}</div>`;
+    html+=`<div class="section-title">📸 Preuves de livraison & préparation</div><div class="empty" style="padding:30px"><div class="empty-icon">📷</div>Aucune preuve pour S${week}</div>`;
   }
- 
+
   document.getElementById('mainContent').innerHTML=html;
 }
- 
-// ─── NAV ──────────────────────────────────────────────────
+
+// ─── NAV ─────────────────────────────────────────────────
 function switchTab(tab) {
   currentTab=tab;
   document.querySelectorAll('.tab').forEach((t,i)=>{
@@ -531,22 +746,19 @@ function switchTab(tab) {
   document.getElementById('weekFilterGroup').classList.toggle('hidden',tab==='hebdo');
   renderCurrentView();
 }
- 
+
 function changeWeek(d) {
   const idx=availableWeeks.indexOf(currentWeek);
-  const newIdx=idx+d;
-  if(newIdx>=0&&newIdx<availableWeeks.length) currentWeek=availableWeeks[newIdx];
+  const ni=idx+d;
+  if(ni>=0&&ni<availableWeeks.length) currentWeek=availableWeeks[ni];
   renderQuotidien();
 }
- 
+
 function applyFilters() { renderCurrentView(); }
- 
 function renderCurrentView() {
   if(currentTab==='hebdo') renderHebdo();
   else renderQuotidien();
 }
- 
-loadData();
 </script>
 </body>
 </html>
