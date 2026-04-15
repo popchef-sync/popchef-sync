@@ -7,231 +7,223 @@
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
-  :root {
-    --aubergine: #631248;
-    --aubergine-dark: #4a0d36;
-    --beurre: #FCF7E2;
-    --tangerine: #EE3932;
-    --epinard: #074741;
-    --fusain: #212721;
-    --blanc: #ffffff;
-    --muted: #7a6e6e;
-    --border: rgba(99,18,72,0.15);
-    --sans: 'Montserrat', sans-serif;
-    --mono: 'IBM Plex Mono', monospace;
-  }
-  * { margin:0; padding:0; box-sizing:border-box; }
-  body { background:var(--beurre); color:var(--fusain); font-family:var(--sans); font-size:13px; min-height:100vh; }
+:root {
+  --aubergine:#631248; --aubergine-dark:#4a0d36;
+  --beurre:#FCF7E2; --tangerine:#EE3932; --epinard:#074741;
+  --fusain:#212721; --blanc:#ffffff; --muted:#7a6e6e;
+  --border:rgba(99,18,72,0.15);
+  --sans:'Montserrat',sans-serif; --mono:'IBM Plex Mono',monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--beurre);color:var(--fusain);font-family:var(--sans);font-size:13px;min-height:100vh;}
 
-  /* ── AUTH ── */
-  #authScreen {
-    min-height:100vh; display:flex; align-items:center; justify-content:center;
-    background: linear-gradient(135deg, var(--aubergine-dark) 0%, var(--aubergine) 100%);
-  }
-  .auth-box {
-    background:var(--blanc); border-radius:12px; padding:48px 40px;
-    width:100%; max-width:420px; box-shadow:0 20px 60px rgba(0,0,0,0.3);
-  }
-  .auth-logo { text-align:center; margin-bottom:32px; }
-  .auth-logo-text { font-size:28px; font-weight:800; color:var(--aubergine); text-transform:uppercase; }
-  .auth-logo-text span { font-weight:300; }
-  .auth-logo-sub { font-size:11px; color:var(--muted); font-family:var(--mono); text-transform:uppercase; letter-spacing:1px; margin-top:4px; }
-  .auth-title { font-size:16px; font-weight:700; color:var(--fusain); margin-bottom:24px; text-align:center; }
-  .auth-input {
-    width:100%; padding:12px 14px; border:1.5px solid var(--border);
-    border-radius:6px; font-family:var(--sans); font-size:13px;
-    background:var(--beurre); margin-bottom:12px; outline:none;
-    transition:border-color 0.2s;
-  }
-  .auth-input:focus { border-color:var(--aubergine); }
-  .auth-btn {
-    width:100%; padding:13px; background:var(--aubergine); color:var(--beurre);
-    border:none; border-radius:6px; font-family:var(--sans); font-size:13px;
-    font-weight:700; cursor:pointer; transition:background 0.2s; text-transform:uppercase;
-    letter-spacing:0.5px; margin-top:4px;
-  }
-  .auth-btn:hover { background:var(--aubergine-dark); }
-  .auth-btn:disabled { opacity:0.6; cursor:not-allowed; }
-  .auth-link { text-align:center; margin-top:16px; font-size:12px; color:var(--muted); }
-  .auth-link a { color:var(--aubergine); cursor:pointer; font-weight:600; text-decoration:none; }
-  .auth-msg { padding:10px 14px; border-radius:6px; font-size:12px; margin-bottom:12px; font-family:var(--mono); }
-  .auth-msg.error { background:rgba(238,57,50,0.1); color:var(--tangerine); border:1px solid rgba(238,57,50,0.3); }
-  .auth-msg.success { background:rgba(7,71,65,0.1); color:var(--epinard); border:1px solid rgba(7,71,65,0.3); }
-  .auth-divider { border:none; border-top:1px solid var(--border); margin:16px 0; }
+/* AUTH */
+#authScreen{min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--aubergine-dark),var(--aubergine));}
+.auth-box{background:var(--blanc);border-radius:12px;padding:48px 40px;width:100%;max-width:420px;box-shadow:0 20px 60px rgba(0,0,0,0.3);}
+.auth-logo{text-align:center;margin-bottom:32px;}
+.auth-logo-text{font-size:28px;font-weight:800;color:var(--aubergine);text-transform:uppercase;}
+.auth-logo-text span{font-weight:300;}
+.auth-logo-sub{font-size:11px;color:var(--muted);font-family:var(--mono);text-transform:uppercase;letter-spacing:1px;margin-top:4px;}
+.auth-title{font-size:16px;font-weight:700;color:var(--fusain);margin-bottom:24px;text-align:center;}
+.auth-input{width:100%;padding:12px 14px;border:1.5px solid var(--border);border-radius:6px;font-family:var(--sans);font-size:13px;background:var(--beurre);margin-bottom:12px;outline:none;transition:border-color 0.2s;}
+.auth-input:focus{border-color:var(--aubergine);}
+.auth-btn{width:100%;padding:13px;background:var(--aubergine);color:var(--beurre);border:none;border-radius:6px;font-family:var(--sans);font-size:13px;font-weight:700;cursor:pointer;transition:background 0.2s;text-transform:uppercase;letter-spacing:0.5px;margin-top:4px;}
+.auth-btn:hover{background:var(--aubergine-dark);}
+.auth-btn:disabled{opacity:0.6;cursor:not-allowed;}
+.auth-link{text-align:center;margin-top:16px;font-size:12px;color:var(--muted);}
+.auth-link a{color:var(--aubergine);cursor:pointer;font-weight:600;text-decoration:none;}
+.auth-msg{padding:10px 14px;border-radius:6px;font-size:12px;margin-bottom:12px;font-family:var(--mono);}
+.auth-msg.error{background:rgba(238,57,50,0.1);color:var(--tangerine);border:1px solid rgba(238,57,50,0.3);}
+.auth-msg.success{background:rgba(7,71,65,0.1);color:var(--epinard);border:1px solid rgba(7,71,65,0.3);}
 
-  /* ── APP ── */
-  #appScreen { display:none; }
+/* APP */
+#appScreen{display:none;}
+.header{background:var(--aubergine);padding:0 32px;display:flex;align-items:center;justify-content:space-between;height:60px;}
+.header-left{display:flex;align-items:center;}
+.logo-text{font-size:20px;font-weight:800;color:var(--beurre);letter-spacing:-0.5px;text-transform:uppercase;}
+.logo-text span{font-weight:300;}
+.hd{width:1px;height:24px;background:rgba(252,247,226,0.3);margin:0 16px;}
+.header-subtitle{font-size:11px;font-weight:500;color:rgba(252,247,226,0.7);text-transform:uppercase;letter-spacing:1.5px;font-family:var(--mono);}
+.header-right{display:flex;align-items:center;gap:12px;}
+.user-badge{font-size:11px;color:rgba(252,247,226,0.6);font-family:var(--mono);}
+.hbtn{background:rgba(252,247,226,0.1);border:1px solid rgba(252,247,226,0.2);color:rgba(252,247,226,0.8);padding:5px 12px;border-radius:4px;cursor:pointer;font-size:11px;font-family:var(--mono);transition:all 0.2s;}
+.hbtn:hover{background:rgba(252,247,226,0.2);}
+.sync-badge{display:flex;align-items:center;gap:6px;font-size:11px;color:rgba(252,247,226,0.6);font-family:var(--mono);}
+.sync-dot{width:6px;height:6px;background:#22c55e;border-radius:50%;animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}
 
-  .header { background:var(--aubergine); padding:0 32px; display:flex; align-items:center; justify-content:space-between; height:60px; }
-  .header-left { display:flex; align-items:center; }
-  .logo-text { font-size:20px; font-weight:800; color:var(--beurre); letter-spacing:-0.5px; text-transform:uppercase; }
-  .logo-text span { font-weight:300; }
-  .header-divider { width:1px; height:24px; background:rgba(252,247,226,0.3); margin:0 16px; }
-  .header-subtitle { font-size:11px; font-weight:500; color:rgba(252,247,226,0.7); text-transform:uppercase; letter-spacing:1.5px; font-family:var(--mono); }
-  .header-right { display:flex; align-items:center; gap:16px; }
-  .user-badge { font-size:11px; color:rgba(252,247,226,0.6); font-family:var(--mono); }
-  .logout-btn { background:rgba(252,247,226,0.1); border:1px solid rgba(252,247,226,0.2); color:rgba(252,247,226,0.8); padding:5px 12px; border-radius:4px; cursor:pointer; font-size:11px; font-family:var(--mono); transition:all 0.2s; }
-  .logout-btn:hover { background:rgba(252,247,226,0.2); }
-  .sync-badge { display:flex; align-items:center; gap:6px; font-size:11px; color:rgba(252,247,226,0.6); font-family:var(--mono); }
-  .sync-dot { width:6px; height:6px; background:#22c55e; border-radius:50%; animation:pulse 2s infinite; }
-  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+.tabs{background:var(--aubergine-dark);padding:0 32px;display:flex;border-bottom:1px solid rgba(252,247,226,0.1);}
+.tab{padding:12px 20px;font-size:12px;font-weight:600;color:rgba(252,247,226,0.5);cursor:pointer;border-bottom:2px solid transparent;transition:all 0.2s;text-transform:uppercase;letter-spacing:0.8px;}
+.tab.active{color:var(--beurre);border-bottom-color:var(--beurre);}
+.tab:hover:not(.active){color:rgba(252,247,226,0.8);}
 
-  .tabs { background:var(--aubergine-dark); padding:0 32px; display:flex; border-bottom:1px solid rgba(252,247,226,0.1); }
-  .tab { padding:12px 20px; font-size:12px; font-weight:600; color:rgba(252,247,226,0.5); cursor:pointer; border-bottom:2px solid transparent; transition:all 0.2s; text-transform:uppercase; letter-spacing:0.8px; }
-  .tab.active { color:var(--beurre); border-bottom-color:var(--beurre); }
-  .tab:hover:not(.active) { color:rgba(252,247,226,0.8); }
+.filters{background:var(--blanc);border-bottom:2px solid var(--border);padding:12px 32px;display:flex;align-items:center;gap:20px;flex-wrap:wrap;}
+.fg{display:flex;align-items:center;gap:8px;}
+.fl{font-size:10px;font-weight:700;color:var(--aubergine);text-transform:uppercase;letter-spacing:1.5px;font-family:var(--mono);}
+.fsel{background:var(--beurre);border:1.5px solid var(--border);color:var(--fusain);padding:6px 12px;border-radius:4px;font-size:12px;font-family:var(--sans);font-weight:600;cursor:pointer;outline:none;transition:border-color 0.2s;}
+.fsel:focus{border-color:var(--aubergine);}
 
-  .filters { background:var(--blanc); border-bottom:2px solid var(--border); padding:12px 32px; display:flex; align-items:center; gap:20px; flex-wrap:wrap; }
-  .filter-group { display:flex; align-items:center; gap:8px; }
-  .filter-label { font-size:10px; font-weight:700; color:var(--aubergine); text-transform:uppercase; letter-spacing:1.5px; font-family:var(--mono); }
-  .filter-select { background:var(--beurre); border:1.5px solid var(--border); color:var(--fusain); padding:6px 12px; border-radius:4px; font-size:12px; font-family:var(--sans); font-weight:600; cursor:pointer; outline:none; transition:border-color 0.2s; min-width:180px; }
-  .filter-select:focus { border-color:var(--aubergine); }
+.content{padding:24px 32px;overflow-x:auto;}
+.loading{display:flex;align-items:center;justify-content:center;height:300px;color:var(--muted);gap:12px;font-family:var(--mono);font-size:13px;}
+.spinner{width:22px;height:22px;border:2px solid var(--border);border-top-color:var(--aubergine);border-radius:50%;animation:spin 0.8s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
 
-  .content { padding:24px 32px; overflow-x:auto; }
+/* TABLE — fix sticky column */
+.table-wrapper{overflow-x:auto;border-radius:8px;border:1.5px solid var(--border);box-shadow:0 2px 12px rgba(99,18,72,0.08);background:var(--blanc);margin-bottom:28px;}
+table{border-collapse:collapse;width:100%;min-width:800px;}
+th,td{padding:9px 14px;text-align:right;white-space:nowrap;border-bottom:1px solid var(--border);font-size:12px;}
 
-  .loading { display:flex; align-items:center; justify-content:center; height:300px; color:var(--muted); gap:12px; font-family:var(--mono); font-size:13px; }
-  .spinner { width:22px; height:22px; border:2px solid var(--border); border-top-color:var(--aubergine); border-radius:50%; animation:spin 0.8s linear infinite; }
-  @keyframes spin { to { transform:rotate(360deg); } }
+/* Sticky first column - fix complet */
+th:first-child,td:first-child{
+  text-align:left;
+  position:sticky;left:0;z-index:3;
+  min-width:220px;font-weight:600;
+  background:var(--blanc);
+  border-right:2px solid rgba(99,18,72,0.2);
+  box-shadow:3px 0 6px rgba(99,18,72,0.08);
+}
+thead th{background:var(--aubergine);color:var(--beurre);font-family:var(--mono);font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:0.5px;border-bottom:none;z-index:4;}
+thead th:first-child{background:var(--aubergine);color:var(--beurre);z-index:5;}
+tbody tr:last-child td{border-bottom:none;}
 
-  .table-wrapper { overflow-x:auto; border-radius:8px; border:1.5px solid var(--border); box-shadow:0 2px 12px rgba(99,18,72,0.08); background:var(--blanc); margin-bottom:28px; }
-  table { border-collapse:collapse; width:100%; min-width:800px; }
-  th, td { padding:9px 14px; text-align:right; white-space:nowrap; border-bottom:1px solid var(--border); font-size:12px; }
-  th:first-child, td:first-child {
-    text-align:left; position:sticky; left:0; z-index:10;
-    background:var(--blanc); min-width:220px; font-weight:600;
-    /* Fix: bordure droite pour séparer du contenu */
-    border-right:2px solid var(--border);
-    box-shadow:2px 0 4px rgba(99,18,72,0.06);
-  }
-  thead th { background:var(--aubergine); color:var(--beurre); font-family:var(--mono); font-size:11px; font-weight:500; text-transform:uppercase; letter-spacing:0.5px; border-bottom:none; }
-  thead th:first-child { background:var(--aubergine); color:var(--beurre); }
-  tbody tr:last-child td { border-bottom:none; }
-  tbody tr:hover td { background:rgba(99,18,72,0.03); }
-  tbody tr:hover td:first-child { background:rgba(99,18,72,0.05); }
+/* Fix hover — doit surcharger le background sticky */
+tbody tr:hover td{background:rgba(99,18,72,0.03);}
+tbody tr:hover td:first-child{background:rgba(99,18,72,0.06);}
 
-  .row-section td { background:var(--aubergine) !important; color:var(--beurre) !important; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:1.5px; font-family:var(--mono); padding:5px 14px; border-bottom:none; border-right-color:rgba(252,247,226,0.2) !important; }
-  .row-gachis td { background:rgba(99,18,72,0.06) !important; font-weight:700; }
-  .row-gachis td:first-child { background:rgba(99,18,72,0.08) !important; color:var(--aubergine); }
+/* Section rows */
+.rs td{background:var(--aubergine) !important;color:var(--beurre) !important;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;font-family:var(--mono);padding:5px 14px;border-bottom:none;}
+.rs td:first-child{background:var(--aubergine) !important;border-right-color:rgba(255,255,255,0.2) !important;box-shadow:3px 0 0 var(--aubergine) !important;}
 
-  .c-green { color:#15803d; font-weight:700; }
-  .c-red { color:var(--tangerine); font-weight:700; }
+/* Gachis rows */
+.rg td{background:rgba(99,18,72,0.05) !important;font-weight:700;}
+.rg td:first-child{background:rgba(99,18,72,0.08) !important;color:var(--aubergine);}
 
-  .stats-row { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:16px; margin-bottom:24px; }
-  .stat-card { background:var(--blanc); border:1.5px solid var(--border); border-radius:8px; padding:20px; box-shadow:0 2px 8px rgba(99,18,72,0.06); }
-  .stat-card.highlight { background:var(--aubergine); border-color:var(--aubergine); }
-  .stat-label { font-size:10px; color:var(--muted); font-family:var(--mono); text-transform:uppercase; letter-spacing:1px; margin-bottom:10px; font-weight:500; }
-  .stat-card.highlight .stat-label { color:rgba(252,247,226,0.6); }
-  .stat-value { font-size:26px; font-weight:800; letter-spacing:-1px; color:var(--aubergine); }
-  .stat-card.highlight .stat-value { color:var(--beurre); }
-  .stat-sub { font-size:11px; color:var(--muted); margin-top:6px; font-family:var(--mono); }
-  .stat-card.highlight .stat-sub { color:rgba(252,247,226,0.5); }
+/* Total column */
+.tcol{background:rgba(99,18,72,0.04);font-weight:700;}
 
-  .week-nav { display:flex; align-items:center; gap:4px; background:var(--beurre); border:1.5px solid var(--border); border-radius:4px; padding:3px; }
-  .week-btn { background:none; border:none; color:var(--aubergine); cursor:pointer; padding:4px 12px; border-radius:3px; font-size:16px; font-weight:700; transition:all 0.15s; }
-  .week-btn:hover { background:var(--aubergine); color:var(--beurre); }
-  .week-label { font-family:var(--mono); font-size:13px; font-weight:700; padding:4px 10px; min-width:60px; text-align:center; color:var(--aubergine); }
+.c-green{color:#15803d;font-weight:700;}
+.c-red{color:var(--tangerine);font-weight:700;}
 
-  .section-title { font-size:12px; font-weight:700; color:var(--aubergine); text-transform:uppercase; letter-spacing:1px; font-family:var(--mono); padding:24px 0 16px; border-top:2px solid var(--border); margin-top:8px; }
-  .proofs-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:16px; }
-  .proof-card { background:var(--blanc); border:1.5px solid var(--border); border-radius:8px; overflow:hidden; box-shadow:0 2px 8px rgba(99,18,72,0.06); }
-  .proof-header { background:var(--aubergine); padding:10px 14px; display:flex; justify-content:space-between; align-items:center; }
-  .proof-site { font-size:11px; font-weight:700; color:var(--beurre); text-transform:uppercase; letter-spacing:0.5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:160px; }
-  .proof-date { font-size:10px; color:rgba(252,247,226,0.6); font-family:var(--mono); }
-  .proof-imgs { display:grid; grid-template-columns:1fr 1fr; gap:8px; padding:12px; }
-  .proof-img-label { font-size:9px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:4px; font-family:var(--mono); }
-  .proof-img { width:100%; height:90px; object-fit:cover; border-radius:4px; border:1px solid var(--border); cursor:pointer; transition:opacity 0.2s; display:block; }
-  .proof-img:hover { opacity:0.85; }
-  .proof-missing { width:100%; height:90px; background:var(--beurre); border:1.5px dashed var(--border); border-radius:4px; display:flex; align-items:center; justify-content:center; color:var(--muted); font-size:20px; }
+/* STATS */
+.stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin-bottom:24px;}
+.stat-card{background:var(--blanc);border:1.5px solid var(--border);border-radius:8px;padding:20px;box-shadow:0 2px 8px rgba(99,18,72,0.06);}
+.stat-card.hl{background:var(--aubergine);border-color:var(--aubergine);}
+.slabel{font-size:10px;color:var(--muted);font-family:var(--mono);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;font-weight:500;}
+.hl .slabel{color:rgba(252,247,226,0.6);}
+.sval{font-size:26px;font-weight:800;letter-spacing:-1px;color:var(--aubergine);}
+.hl .sval{color:var(--beurre);}
+.ssub{font-size:11px;color:var(--muted);margin-top:6px;font-family:var(--mono);}
+.hl .ssub{color:rgba(252,247,226,0.5);}
 
-  .empty { text-align:center; padding:60px 20px; color:var(--muted); font-family:var(--mono); font-size:13px; }
-  .empty-icon { font-size:40px; margin-bottom:16px; }
-  .hidden { display:none !important; }
-  .error-box { background:rgba(238,57,50,0.08); border:1.5px solid rgba(238,57,50,0.3); border-radius:8px; padding:16px; color:var(--tangerine); font-family:var(--mono); font-size:12px; margin:20px 0; }
+/* WEEK NAV */
+.week-nav{display:flex;align-items:center;gap:4px;background:var(--beurre);border:1.5px solid var(--border);border-radius:4px;padding:3px;}
+.wbtn{background:none;border:none;color:var(--aubergine);cursor:pointer;padding:4px 12px;border-radius:3px;font-size:16px;font-weight:700;transition:all 0.15s;}
+.wbtn:hover{background:var(--aubergine);color:var(--beurre);}
+.wlbl{font-family:var(--mono);font-size:13px;font-weight:700;padding:4px 10px;min-width:60px;text-align:center;color:var(--aubergine);}
+
+/* PROOFS */
+.section-title{font-size:12px;font-weight:700;color:var(--aubergine);text-transform:uppercase;letter-spacing:1px;font-family:var(--mono);padding:24px 0 16px;border-top:2px solid var(--border);margin-top:8px;}
+.proofs-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px;}
+.proof-card{background:var(--blanc);border:1.5px solid var(--border);border-radius:8px;overflow:hidden;box-shadow:0 2px 8px rgba(99,18,72,0.06);}
+.proof-header{background:var(--aubergine);padding:10px 14px;display:flex;justify-content:space-between;align-items:center;}
+.proof-site{font-size:11px;font-weight:700;color:var(--beurre);text-transform:uppercase;letter-spacing:0.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:160px;}
+.proof-date{font-size:10px;color:rgba(252,247,226,0.6);font-family:var(--mono);}
+.proof-imgs{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:12px;}
+.pilbl{font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;font-family:var(--mono);}
+.pimg{width:100%;height:90px;object-fit:cover;border-radius:4px;border:1px solid var(--border);cursor:pointer;transition:opacity 0.2s;display:block;}
+.pimg:hover{opacity:0.85;}
+.pmiss{width:100%;height:90px;background:var(--beurre);border:1.5px dashed var(--border);border-radius:4px;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:20px;}
+
+.empty{text-align:center;padding:60px 20px;color:var(--muted);font-family:var(--mono);font-size:13px;}
+.ei{font-size:40px;margin-bottom:16px;}
+.hidden{display:none!important;}
+.error-box{background:rgba(238,57,50,0.08);border:1.5px solid rgba(238,57,50,0.3);border-radius:8px;padding:16px;color:var(--tangerine);font-family:var(--mono);font-size:12px;margin:20px 0;}
 </style>
 </head>
 <body>
 
-<!-- ── AUTH SCREEN ── -->
+<!-- AUTH -->
 <div id="authScreen">
-  <div class="auth-box">
-    <div class="auth-logo">
-      <div class="auth-logo-text"><span>POP</span>CHEF</div>
-      <div class="auth-logo-sub">Dashboard Livraison & Gâchis</div>
-    </div>
+<div class="auth-box">
+  <div class="auth-logo">
+    <div class="auth-logo-text"><span>POP</span>CHEF</div>
+    <div class="auth-logo-sub">Dashboard Livraison & Gâchis</div>
+  </div>
 
-    <!-- LOGIN -->
-    <div id="loginForm">
-      <div class="auth-title">Connexion</div>
-      <div id="loginMsg"></div>
-      <input class="auth-input" type="email" id="loginEmail" placeholder="votre@popchef.com" autocomplete="email">
-      <input class="auth-input" type="password" id="loginPassword" placeholder="Mot de passe" autocomplete="current-password">
-      <button class="auth-btn" onclick="login()">Se connecter</button>
-      <div class="auth-link">
-        <a onclick="showForgot()">Mot de passe oublié ?</a>
-        &nbsp;·&nbsp;
-        <a onclick="showRegister()">Créer un compte</a>
-      </div>
-    </div>
-
-    <!-- REGISTER -->
-    <div id="registerForm" class="hidden">
-      <div class="auth-title">Créer un compte</div>
-      <div id="registerMsg"></div>
-      <input class="auth-input" type="email" id="regEmail" placeholder="votre@popchef.com" autocomplete="email">
-      <input class="auth-input" type="password" id="regPassword" placeholder="Choisir un mot de passe (min. 8 car.)" autocomplete="new-password">
-      <input class="auth-input" type="password" id="regPassword2" placeholder="Confirmer le mot de passe" autocomplete="new-password">
-      <button class="auth-btn" onclick="register()">Créer mon compte</button>
-      <div class="auth-link"><a onclick="showLogin()">← Retour à la connexion</a></div>
-    </div>
-
-    <!-- FORGOT -->
-    <div id="forgotForm" class="hidden">
-      <div class="auth-title">Réinitialiser le mot de passe</div>
-      <div id="forgotMsg"></div>
-      <input class="auth-input" type="email" id="forgotEmail" placeholder="votre@popchef.com">
-      <button class="auth-btn" onclick="resetPassword()">Envoyer le lien</button>
-      <div class="auth-link"><a onclick="showLogin()">← Retour à la connexion</a></div>
-    </div>
-
-    <!-- CONFIRM EMAIL -->
-    <div id="confirmForm" class="hidden">
-      <div class="auth-title">✉️ Vérifiez votre email</div>
-      <p style="text-align:center;color:var(--muted);font-size:13px;line-height:1.6">
-        Un email de confirmation a été envoyé à votre adresse.<br>
-        Cliquez sur le lien dans l'email pour activer votre compte.
-      </p>
-      <br>
-      <div class="auth-link"><a onclick="showLogin()">← Retour à la connexion</a></div>
-    </div>
-
-    <!-- ACCOUNT SETTINGS (dans auth box, accessible depuis header) -->
-    <div id="accountForm" class="hidden">
-      <div class="auth-title">⚙️ Paramètres du compte</div>
-      <div id="accountMsg"></div>
-      <p style="font-size:12px;color:var(--muted);margin-bottom:16px;font-family:var(--mono)" id="accountEmail"></p>
-      <hr class="auth-divider">
-      <p style="font-size:12px;font-weight:700;margin-bottom:12px">Changer de mot de passe</p>
-      <input class="auth-input" type="password" id="newPassword" placeholder="Nouveau mot de passe">
-      <input class="auth-input" type="password" id="newPassword2" placeholder="Confirmer le nouveau mot de passe">
-      <button class="auth-btn" onclick="changePassword()">Mettre à jour</button>
-      <div class="auth-link"><a onclick="closeAccount()">← Retour au dashboard</a></div>
+  <div id="loginForm">
+    <div class="auth-title">Connexion</div>
+    <div id="loginMsg"></div>
+    <input class="auth-input" type="email" id="loginEmail" placeholder="votre@popchef.com" autocomplete="email">
+    <input class="auth-input" type="password" id="loginPassword" placeholder="Mot de passe" autocomplete="current-password">
+    <button class="auth-btn" onclick="login()">Se connecter</button>
+    <div class="auth-link">
+      <a onclick="showForgot()">Mot de passe oublié ?</a> &nbsp;·&nbsp;
+      <a onclick="showRegister()">Créer un compte</a>
     </div>
   </div>
+
+  <div id="registerForm" class="hidden">
+    <div class="auth-title">Créer un compte</div>
+    <div id="registerMsg"></div>
+    <input class="auth-input" type="email" id="regEmail" placeholder="votre@popchef.com" autocomplete="email">
+    <input class="auth-input" type="password" id="regPwd" placeholder="Mot de passe (min. 8 car.)" autocomplete="new-password">
+    <input class="auth-input" type="password" id="regPwd2" placeholder="Confirmer le mot de passe" autocomplete="new-password">
+    <button class="auth-btn" onclick="register()">Créer mon compte</button>
+    <div class="auth-link"><a onclick="showLogin()">← Retour</a></div>
+  </div>
+
+  <div id="forgotForm" class="hidden">
+    <div class="auth-title">Mot de passe oublié</div>
+    <div id="forgotMsg"></div>
+    <input class="auth-input" type="email" id="forgotEmail" placeholder="votre@popchef.com">
+    <button class="auth-btn" onclick="sendReset()">Envoyer le lien</button>
+    <div class="auth-link"><a onclick="showLogin()">← Retour</a></div>
+  </div>
+
+  <div id="resetForm" class="hidden">
+    <div class="auth-title">Nouveau mot de passe</div>
+    <div id="resetMsg"></div>
+    <input class="auth-input" type="password" id="resetPwd" placeholder="Nouveau mot de passe (min. 8 car.)">
+    <input class="auth-input" type="password" id="resetPwd2" placeholder="Confirmer le mot de passe">
+    <button class="auth-btn" onclick="doReset()">Mettre à jour</button>
+  </div>
+
+  <div id="confirmForm" class="hidden">
+    <div class="auth-title">✉️ Vérifiez votre email</div>
+    <p style="text-align:center;color:var(--muted);font-size:13px;line-height:1.6">
+      Un email de confirmation a été envoyé.<br>Cliquez sur le lien pour activer votre compte.
+    </p>
+    <br>
+    <div class="auth-link"><a onclick="showLogin()">← Retour à la connexion</a></div>
+  </div>
+
+  <div id="accountForm" class="hidden">
+    <div class="auth-title">⚙️ Paramètres du compte</div>
+    <div id="accountMsg"></div>
+    <p style="font-size:12px;color:var(--muted);margin-bottom:16px;font-family:var(--mono)" id="accountEmail"></p>
+    <hr style="border:none;border-top:1px solid var(--border);margin:0 0 16px">
+    <p style="font-size:12px;font-weight:700;margin-bottom:12px">Changer de mot de passe</p>
+    <input class="auth-input" type="password" id="newPwd" placeholder="Nouveau mot de passe">
+    <input class="auth-input" type="password" id="newPwd2" placeholder="Confirmer">
+    <button class="auth-btn" onclick="changePwd()">Mettre à jour</button>
+    <div class="auth-link"><a onclick="closeAccount()">← Retour au dashboard</a></div>
+  </div>
+</div>
 </div>
 
-<!-- ── APP SCREEN ── -->
+<!-- APP -->
 <div id="appScreen">
   <div class="header">
     <div class="header-left">
       <div class="logo-text"><span>POP</span>CHEF</div>
-      <div class="header-divider"></div>
+      <div class="hd"></div>
       <div class="header-subtitle">Dashboard Livraison & Gâchis</div>
     </div>
     <div class="header-right">
       <div class="sync-badge"><div class="sync-dot"></div><span id="syncInfo">...</span></div>
       <div class="user-badge" id="userBadge"></div>
-      <button class="logout-btn" onclick="showAccount()">⚙️ Mon compte</button>
-      <button class="logout-btn" onclick="logout()">Déconnexion</button>
+      <button class="hbtn" onclick="showAccount()">⚙️ Mon compte</button>
+      <button class="hbtn" onclick="logout()">Déconnexion</button>
     </div>
   </div>
 
@@ -241,22 +233,19 @@
   </div>
 
   <div class="filters">
-    <div class="filter-group">
-      <span class="filter-label">Année :</span>
-      <select class="filter-select" id="yearFilter" onchange="onYearChange()" style="min-width:100px">
-        <option value="2026">2026</option>
-        <option value="2025">2025</option>
-      </select>
+    <div class="fg">
+      <span class="fl">Année :</span>
+      <select class="fsel" id="yearFilter" onchange="onYearChange()" style="min-width:90px"></select>
     </div>
-    <div class="filter-group">
-      <span class="filter-label">Client :</span>
-      <select class="filter-select" id="siteFilter" onchange="applyFilters()">
+    <div class="fg">
+      <span class="fl">Client :</span>
+      <select class="fsel" id="siteFilter" onchange="applyFilters()" style="min-width:200px">
         <option value="all">Emplacement (tous)</option>
       </select>
     </div>
-    <div class="filter-group">
-      <span class="filter-label">Catégorie :</span>
-      <select class="filter-select" id="catFilter" onchange="applyFilters()">
+    <div class="fg">
+      <span class="fl">Catégorie :</span>
+      <select class="fsel" id="catFilter" onchange="applyFilters()">
         <option value="EPD">TOTAL (EPD)</option>
         <option value="Dish">Dish</option>
         <option value="Starter">Starter</option>
@@ -264,12 +253,12 @@
         <option value="Dessert">Dessert</option>
       </select>
     </div>
-    <div class="filter-group hidden" id="weekFilterGroup">
-      <span class="filter-label">Semaine :</span>
+    <div class="fg hidden" id="weekFilterGroup">
+      <span class="fl">Semaine :</span>
       <div class="week-nav">
-        <button class="week-btn" onclick="changeWeek(-1)">‹</button>
-        <span class="week-label" id="weekLabel">S1</span>
-        <button class="week-btn" onclick="changeWeek(1)">›</button>
+        <button class="wbtn" onclick="changeWeek(-1)">‹</button>
+        <span class="wlbl" id="weekLabel">S1</span>
+        <button class="wbtn" onclick="changeWeek(1)">›</button>
       </div>
     </div>
   </div>
@@ -280,309 +269,229 @@
 </div>
 
 <script>
-// ─── SUPABASE ────────────────────────────────────────────
-const SUPABASE_URL = 'https://nnwvovoxdejjxlxlqqjv.supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5ud3Zvdm94ZGVqanhseGxxcWp2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU5MTA5OTMsImV4cCI6MjA5MTQ4Njk5M30.otwWgQi5YFeYfsDUjRQPcFg2RqlZpgTyRvoOK4R-n5k';
-const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const SUPA_URL='https://nnwvovoxdejjxlxlqqjv.supabase.co';
+const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5ud3Zvdm94ZGVqanhseGxxcWp2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU5MTA5OTMsImV4cCI6MjA5MTQ4Njk5M30.otwWgQi5YFeYfsDUjRQPcFg2RqlZpgTyRvoOK4R-n5k';
+const sb=supabase.createClient(SUPA_URL,SUPA_KEY);
 
-// ─── STATE ───────────────────────────────────────────────
-let currentTab = 'hebdo';
-let currentWeek = 1;
-let currentYear = new Date().getFullYear();
-let availableWeeks = [];
-let allDispatched = [], allDelivered = [], allConsumed = [];
-let allStock12h30 = [], allStock6h = [], allProofs = [];
-let sitesLoaded = false;
+let currentTab='hebdo', currentWeek=1, currentYear=new Date().getFullYear();
+let availableWeeks=[], availableYears=[];
+let allDisp=[], allDeliv=[], allConso=[], allS12=[], allS6=[], allProofs=[];
 
-// ─── AUTH ────────────────────────────────────────────────
-function showLogin() {
-  ['loginForm','registerForm','forgotForm','confirmForm','accountForm'].forEach(id => {
-    document.getElementById(id).classList.add('hidden');
-  });
-  document.getElementById('loginForm').classList.remove('hidden');
-}
-function showRegister() {
-  document.getElementById('loginForm').classList.add('hidden');
-  document.getElementById('registerForm').classList.remove('hidden');
-}
-function showForgot() {
-  document.getElementById('loginForm').classList.add('hidden');
-  document.getElementById('forgotForm').classList.remove('hidden');
-}
-function showAccount() {
-  document.getElementById('appScreen').style.display = 'none';
-  document.getElementById('authScreen').style.display = 'flex';
-  ['loginForm','registerForm','forgotForm','confirmForm'].forEach(id => {
-    document.getElementById(id).classList.add('hidden');
-  });
+// ── AUTH FORMS ──
+function showLogin(){['loginForm','registerForm','forgotForm','resetForm','confirmForm','accountForm'].forEach(id=>document.getElementById(id).classList.add('hidden'));document.getElementById('loginForm').classList.remove('hidden');}
+function showRegister(){document.getElementById('loginForm').classList.add('hidden');document.getElementById('registerForm').classList.remove('hidden');}
+function showForgot(){document.getElementById('loginForm').classList.add('hidden');document.getElementById('forgotForm').classList.remove('hidden');}
+function showAccount(){
+  document.getElementById('appScreen').style.display='none';
+  document.getElementById('authScreen').style.display='flex';
+  ['loginForm','registerForm','forgotForm','resetForm','confirmForm'].forEach(id=>document.getElementById(id).classList.add('hidden'));
   document.getElementById('accountForm').classList.remove('hidden');
-  sb.auth.getUser().then(({data}) => {
-    if (data?.user) document.getElementById('accountEmail').textContent = data.user.email;
-  });
+  sb.auth.getUser().then(({data})=>{if(data?.user)document.getElementById('accountEmail').textContent=data.user.email;});
 }
-function closeAccount() {
-  document.getElementById('authScreen').style.display = 'none';
-  document.getElementById('appScreen').style.display = 'block';
+function closeAccount(){document.getElementById('authScreen').style.display='none';document.getElementById('appScreen').style.display='block';}
+function amsg(id,text,type='error'){document.getElementById(id).innerHTML=`<div class="auth-msg ${type}">${text}</div>`;}
+
+async function login(){
+  const email=document.getElementById('loginEmail').value.trim();
+  const pwd=document.getElementById('loginPassword').value;
+  if(!email.endsWith('@popchef.com')){amsg('loginMsg','❌ Seuls les emails @popchef.com sont autorisés.');return;}
+  const btn=document.querySelector('#loginForm .auth-btn');
+  btn.disabled=true;btn.textContent='Connexion...';
+  const{error}=await sb.auth.signInWithPassword({email,password:pwd});
+  btn.disabled=false;btn.textContent='Se connecter';
+  if(error)amsg('loginMsg','❌ '+(error.message==='Invalid login credentials'?'Email ou mot de passe incorrect.':error.message));
 }
 
-function msg(id, text, type='error') {
-  const el = document.getElementById(id);
-  el.innerHTML = `<div class="auth-msg ${type}">${text}</div>`;
+async function register(){
+  const email=document.getElementById('regEmail').value.trim();
+  const pwd=document.getElementById('regPwd').value;
+  const pwd2=document.getElementById('regPwd2').value;
+  if(!email.endsWith('@popchef.com')){amsg('registerMsg','❌ Seuls les emails @popchef.com sont autorisés.');return;}
+  if(pwd.length<8){amsg('registerMsg','❌ Minimum 8 caractères.');return;}
+  if(pwd!==pwd2){amsg('registerMsg','❌ Les mots de passe ne correspondent pas.');return;}
+  const btn=document.querySelector('#registerForm .auth-btn');
+  btn.disabled=true;btn.textContent='Création...';
+  const{error}=await sb.auth.signUp({email,password:pwd,options:{emailRedirectTo:window.location.href}});
+  btn.disabled=false;btn.textContent='Créer mon compte';
+  if(error)amsg('registerMsg','❌ '+error.message);
+  else{document.getElementById('registerForm').classList.add('hidden');document.getElementById('confirmForm').classList.remove('hidden');}
 }
 
-async function login() {
-  const email = document.getElementById('loginEmail').value.trim();
-  const password = document.getElementById('loginPassword').value;
-  if (!email.endsWith('@popchef.com')) {
-    msg('loginMsg', '❌ Seuls les emails @popchef.com sont autorisés.');
-    return;
-  }
-  const btn = document.querySelector('#loginForm .auth-btn');
-  btn.disabled = true; btn.textContent = 'Connexion...';
-  const {error} = await sb.auth.signInWithPassword({email, password});
-  btn.disabled = false; btn.textContent = 'Se connecter';
-  if (error) {
-    msg('loginMsg', '❌ ' + (error.message === 'Invalid login credentials' ? 'Email ou mot de passe incorrect.' : error.message));
-  }
+async function sendReset(){
+  const email=document.getElementById('forgotEmail').value.trim();
+  if(!email.endsWith('@popchef.com')){amsg('forgotMsg','❌ Seuls les emails @popchef.com sont autorisés.');return;}
+  const{error}=await sb.auth.resetPasswordForEmail(email,{redirectTo:window.location.origin+window.location.pathname+'?reset=1'});
+  if(error)amsg('forgotMsg','❌ '+error.message);
+  else amsg('forgotMsg','✅ Email envoyé ! Vérifiez votre boîte mail.','success');
 }
 
-async function register() {
-  const email = document.getElementById('regEmail').value.trim();
-  const pwd = document.getElementById('regPassword').value;
-  const pwd2 = document.getElementById('regPassword2').value;
-  if (!email.endsWith('@popchef.com')) {
-    msg('registerMsg', '❌ Seuls les emails @popchef.com sont autorisés.');
-    return;
-  }
-  if (pwd.length < 8) { msg('registerMsg', '❌ Le mot de passe doit faire au moins 8 caractères.'); return; }
-  if (pwd !== pwd2) { msg('registerMsg', '❌ Les mots de passe ne correspondent pas.'); return; }
-  const btn = document.querySelector('#registerForm .auth-btn');
-  btn.disabled = true; btn.textContent = 'Création...';
-  const {error} = await sb.auth.signUp({
-    email, password: pwd,
-    options: { emailRedirectTo: window.location.href }
-  });
-  btn.disabled = false; btn.textContent = 'Créer mon compte';
-  if (error) {
-    msg('registerMsg', '❌ ' + error.message);
-  } else {
-    document.getElementById('registerForm').classList.add('hidden');
-    document.getElementById('confirmForm').classList.remove('hidden');
-  }
+async function doReset(){
+  const pwd=document.getElementById('resetPwd').value;
+  const pwd2=document.getElementById('resetPwd2').value;
+  if(pwd.length<8){amsg('resetMsg','❌ Minimum 8 caractères.');return;}
+  if(pwd!==pwd2){amsg('resetMsg','❌ Les mots de passe ne correspondent pas.');return;}
+  const{error}=await sb.auth.updateUser({password:pwd});
+  if(error)amsg('resetMsg','❌ '+error.message);
+  else{amsg('resetMsg','✅ Mot de passe mis à jour !','success');setTimeout(()=>sb.auth.signOut(),2000);}
 }
 
-async function resetPassword() {
-  const email = document.getElementById('forgotEmail').value.trim();
-  if (!email.endsWith('@popchef.com')) {
-    msg('forgotMsg', '❌ Seuls les emails @popchef.com sont autorisés.');
-    return;
-  }
-  const {error} = await sb.auth.resetPasswordForEmail(email, {
-    redirectTo: window.location.href + '?reset=true'
-  });
-  if (error) {
-    msg('forgotMsg', '❌ ' + error.message);
-  } else {
-    msg('forgotMsg', '✅ Email envoyé ! Vérifiez votre boîte mail.', 'success');
-  }
+async function changePwd(){
+  const pwd=document.getElementById('newPwd').value;
+  const pwd2=document.getElementById('newPwd2').value;
+  if(pwd.length<8){amsg('accountMsg','❌ Minimum 8 caractères.');return;}
+  if(pwd!==pwd2){amsg('accountMsg','❌ Les mots de passe ne correspondent pas.');return;}
+  const{error}=await sb.auth.updateUser({password:pwd});
+  if(error)amsg('accountMsg','❌ '+error.message);
+  else amsg('accountMsg','✅ Mot de passe mis à jour !','success');
 }
 
-async function changePassword() {
-  const pwd = document.getElementById('newPassword').value;
-  const pwd2 = document.getElementById('newPassword2').value;
-  if (pwd.length < 8) { msg('accountMsg', '❌ Minimum 8 caractères.'); return; }
-  if (pwd !== pwd2) { msg('accountMsg', '❌ Les mots de passe ne correspondent pas.'); return; }
-  const {error} = await sb.auth.updateUser({password: pwd});
-  if (error) { msg('accountMsg', '❌ ' + error.message); }
-  else { msg('accountMsg', '✅ Mot de passe mis à jour !', 'success'); }
+async function logout(){await sb.auth.signOut();}
+
+// Detect reset token in URL
+const urlHash=new URLSearchParams(window.location.search);
+if(urlHash.get('reset')==='1'||window.location.hash.includes('type=recovery')){
+  document.getElementById('authScreen').style.display='flex';
+  ['loginForm','registerForm','forgotForm','confirmForm','accountForm'].forEach(id=>document.getElementById(id).classList.add('hidden'));
+  document.getElementById('resetForm').classList.remove('hidden');
 }
 
-async function logout() {
-  await sb.auth.signOut();
-}
-
-// Auth state listener
-sb.auth.onAuthStateChange((event, session) => {
-  if (event === 'SIGNED_IN' && session) {
-    document.getElementById('authScreen').style.display = 'none';
-    document.getElementById('appScreen').style.display = 'block';
-    document.getElementById('userBadge').textContent = session.user.email;
+sb.auth.onAuthStateChange((event,session)=>{
+  if(event==='PASSWORD_RECOVERY'){
+    document.getElementById('appScreen').style.display='none';
+    document.getElementById('authScreen').style.display='flex';
+    ['loginForm','registerForm','forgotForm','confirmForm','accountForm'].forEach(id=>document.getElementById(id).classList.add('hidden'));
+    document.getElementById('resetForm').classList.remove('hidden');
+  } else if(event==='SIGNED_IN'&&session){
+    document.getElementById('authScreen').style.display='none';
+    document.getElementById('appScreen').style.display='block';
+    document.getElementById('userBadge').textContent=session.user.email;
     loadData();
-  } else if (event === 'SIGNED_OUT') {
-    document.getElementById('authScreen').style.display = 'flex';
-    document.getElementById('appScreen').style.display = 'none';
+  } else if(event==='SIGNED_OUT'){
+    document.getElementById('authScreen').style.display='flex';
+    document.getElementById('appScreen').style.display='none';
     showLogin();
-  } else if (event === 'PASSWORD_RECOVERY') {
-    showAccount();
   }
 });
 
-// Enter key support
-document.addEventListener('keydown', e => {
-  if (e.key === 'Enter') {
-    if (!document.getElementById('loginForm').classList.contains('hidden')) login();
-    else if (!document.getElementById('registerForm').classList.contains('hidden')) register();
-    else if (!document.getElementById('forgotForm').classList.contains('hidden')) resetPassword();
-  }
+document.addEventListener('keydown',e=>{
+  if(e.key!=='Enter')return;
+  if(!document.getElementById('loginForm').classList.contains('hidden'))login();
+  else if(!document.getElementById('registerForm').classList.contains('hidden'))register();
+  else if(!document.getElementById('forgotForm').classList.contains('hidden'))sendReset();
+  else if(!document.getElementById('resetForm').classList.contains('hidden'))doReset();
 });
 
-// ─── UTILS ───────────────────────────────────────────────
-function fmt(n, d=0) {
-  if (n===null||n===undefined||isNaN(n)) return '—';
-  return new Intl.NumberFormat('fr-FR',{minimumFractionDigits:d,maximumFractionDigits:d}).format(n);
-}
-function fmtEuro(n) {
-  if (n===null||n===undefined||isNaN(n)) return '—';
-  return new Intl.NumberFormat('fr-FR',{style:'currency',currency:'EUR',minimumFractionDigits:0,maximumFractionDigits:0}).format(n);
-}
-function fmtPct(n) {
-  if (n===null||n===undefined||isNaN(n)||!isFinite(n)) return '—';
-  return fmt(n*100,1)+'%';
-}
-function pctClass(n) {
-  if (!n||!isFinite(n)||n<=0) return 'c-green';
-  if (n>0.20) return 'c-red';
-  return 'c-green';
-}
-function frDate(d) {
-  if (!d) return '';
-  return new Date(d).toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit'});
-}
-function getSite() { return document.getElementById('siteFilter').value; }
-function getCat() { return document.getElementById('catFilter').value; }
-function getYear() { return parseInt(document.getElementById('yearFilter').value); }
+// ── DATA ──
+function fmt(n,d=0){if(n===null||n===undefined||isNaN(n))return '—';return new Intl.NumberFormat('fr-FR',{minimumFractionDigits:d,maximumFractionDigits:d}).format(n);}
+function fmtE(n){if(n===null||n===undefined||isNaN(n))return '—';return new Intl.NumberFormat('fr-FR',{style:'currency',currency:'EUR',minimumFractionDigits:0,maximumFractionDigits:0}).format(n);}
+function fmtP(n){if(n===null||n===undefined||isNaN(n)||!isFinite(n))return '—';return fmt(n*100,1)+'%';}
+function pC(n){if(!n||!isFinite(n)||n<=0)return 'c-green';return n>0.20?'c-red':'c-green';}
+function frDate(d,withDay=false){if(!d)return '';const dt=new Date(d);if(withDay){const days=['Dim','Lun','Mar','Mer','Jeu','Ven','Sam'];return days[dt.getDay()]+' '+dt.toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit'});}return dt.toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit'});}
+function getSite(){return document.getElementById('siteFilter').value;}
+function getCat(){return document.getElementById('catFilter').value;}
+function getYear(){return parseInt(document.getElementById('yearFilter').value);}
 
-// ─── DATA LOADING ────────────────────────────────────────
-async function fetchTable(table, yearCol, year) {
-  let all = [], from = 0, limit = 1000;
-  while (true) {
-    const {data, error} = await sb.from(table).select('*').eq(yearCol, year).range(from, from+limit-1);
-    if (error) throw new Error(`${table}: ${error.message}`);
-    all = all.concat(data);
-    if (data.length < limit) break;
-    from += limit;
+async function fetchTable(table,year){
+  let all=[],from=0,lim=1000;
+  while(true){
+    const{data,error}=await sb.from(table).select('*').eq('year',year).range(from,from+lim-1);
+    if(error)throw new Error(table+': '+error.message);
+    all=all.concat(data);
+    if(data.length<lim)break;
+    from+=lim;
   }
   return all;
 }
 
-async function loadData() {
-  const year = getYear();
-  document.getElementById('mainContent').innerHTML =
-    '<div class="loading"><div class="spinner"></div> Chargement ' + year + '...</div>';
-
-  try {
-    [allDispatched, allDelivered, allConsumed, allStock12h30, allStock6h, allProofs] = await Promise.all([
-      fetchTable('dispatched', 'year', year),
-      fetchTable('delivered', 'year', year),
-      fetchTable('consumed', 'year', year),
-      fetchTable('stock_12h30', 'year', year),
-      fetchTable('stock_6h', 'year', year),
-      fetchTable('delivery_proofs', 'year', year),
-    ]);
-
-    // Populate sites (only once or on year change)
-    if (!sitesLoaded || true) {
-      const sites = [...new Set([
-        ...allDispatched.map(r=>r.site),
-        ...allDelivered.map(r=>r.site_name),
-      ].filter(Boolean))].sort();
-      const sel = document.getElementById('siteFilter');
-      const prev = sel.value;
-      sel.innerHTML = '<option value="all">Emplacement (tous)</option>';
-      sites.forEach(s => {
-        const o = document.createElement('option');
-        o.value = s; o.textContent = s;
-        if (s === prev) o.selected = true;
-        sel.appendChild(o);
-      });
-      sitesLoaded = true;
-    }
-
-    availableWeeks = [...new Set([
-      ...allDispatched.map(r=>r.week_number),
-      ...allDelivered.map(r=>r.week_number),
-      ...allConsumed.map(r=>r.week_number),
-    ].filter(Boolean))].sort((a,b)=>a-b);
-
-    currentWeek = availableWeeks[availableWeeks.length-1] || 1;
-    const total = allDispatched.length + allDelivered.length + allConsumed.length;
-    document.getElementById('syncInfo').textContent = `${total.toLocaleString('fr-FR')} lignes · ${new Date().toLocaleDateString('fr-FR')}`;
-
-    renderCurrentView();
-  } catch(e) {
-    document.getElementById('mainContent').innerHTML =
-      `<div class="error-box">❌ Erreur: ${e.message}</div>`;
+async function loadAvailableYears(){
+  // Récupère les années disponibles depuis la table dispatched
+  const{data,error}=await sb.from('dispatched').select('year').order('year',{ascending:false});
+  if(!error&&data){
+    const years=[...new Set(data.map(r=>r.year).filter(Boolean))].sort((a,b)=>b-a);
+    availableYears=years;
+    const sel=document.getElementById('yearFilter');
+    const prev=sel.value;
+    sel.innerHTML='';
+    years.forEach(y=>{
+      const o=document.createElement('option');
+      o.value=y;o.textContent=y;
+      if(y===(parseInt(prev)||currentYear))o.selected=true;
+      sel.appendChild(o);
+    });
+    currentYear=parseInt(sel.value);
   }
 }
 
-function onYearChange() {
-  sitesLoaded = false;
-  loadData();
+async function loadData(){
+  const year=getYear();
+  currentYear=year;
+  document.getElementById('mainContent').innerHTML=`<div class="loading"><div class="spinner"></div> Chargement ${year}...</div>`;
+  try{
+    [allDisp,allDeliv,allConso,allS12,allS6,allProofs]=await Promise.all([
+      fetchTable('dispatched',year),
+      fetchTable('delivered',year),
+      fetchTable('consumed',year),
+      fetchTable('stock_12h30',year),
+      fetchTable('stock_6h',year),
+      fetchTable('delivery_proofs',year),
+    ]);
+
+    // Sites
+    const sites=[...new Set([...allDisp.map(r=>r.site),...allDeliv.map(r=>r.site_name)].filter(Boolean))].sort();
+    const sel=document.getElementById('siteFilter');
+    const prev=sel.value;
+    sel.innerHTML='<option value="all">Emplacement (tous)</option>';
+    sites.forEach(s=>{const o=document.createElement('option');o.value=s;o.textContent=s;if(s===prev)o.selected=true;sel.appendChild(o);});
+
+    // Weeks
+    availableWeeks=[...new Set([...allDisp.map(r=>r.week_number),...allDeliv.map(r=>r.week_number),...allConso.map(r=>r.week_number)].filter(Boolean))].sort((a,b)=>a-b);
+    currentWeek=availableWeeks[availableWeeks.length-1]||1;
+
+    const total=allDisp.length+allDeliv.length+allConso.length;
+    document.getElementById('syncInfo').textContent=`${total.toLocaleString('fr-FR')} lignes · ${new Date().toLocaleDateString('fr-FR')}`;
+    renderCurrentView();
+  }catch(e){
+    document.getElementById('mainContent').innerHTML=`<div class="error-box">❌ ${e.message}</div>`;
+  }
 }
 
-// ─── FILTER ──────────────────────────────────────────────
-function filterRows(rows, site, cat, siteField='site') {
-  return rows.filter(r => {
-    const sOk = site==='all' || r[siteField]===site;
-    const cOk = cat==='EPD' ? r.epd==='EPD' : r.category2===cat;
-    return sOk && cOk;
+async function onYearChange(){await loadData();}
+
+// ── FILTER ──
+function filt(rows,site,cat,sf='site'){
+  return rows.filter(r=>{
+    const sOk=site==='all'||r[sf]===site;
+    const cOk=cat==='EPD'?r.epd==='EPD':r.category2===cat;
+    return sOk&&cOk;
   });
 }
 
-// ─── HEBDO ───────────────────────────────────────────────
-function renderHebdo() {
-  const site=getSite(), cat=getCat();
-  const disp = filterRows(allDispatched, site, cat);
-  const deliv = filterRows(allDelivered, site, cat, 'site_name');
-  const conso = filterRows(allConsumed, site, cat);
-  const stock12 = filterRows(allStock12h30, site, cat);
+// ── HEBDO ──
+function renderHebdo(){
+  const site=getSite(),cat=getCat();
+  const disp=filt(allDisp,site,cat);
+  const deliv=filt(allDeliv,site,cat,'site_name');
+  const conso=filt(allConso,site,cat);
+  const s12=filt(allS12,site,cat);
+  const s6=filt(allS6,site,cat);
 
-  const weeks = [...new Set([
-    ...disp.map(r=>r.week_number),
-    ...deliv.map(r=>r.week_number),
-    ...conso.map(r=>r.week_number),
-  ].filter(Boolean))].sort((a,b)=>a-b);
+  const weeks=[...new Set([...disp.map(r=>r.week_number),...deliv.map(r=>r.week_number),...conso.map(r=>r.week_number)].filter(Boolean))].sort((a,b)=>a-b);
+  if(!weeks.length){document.getElementById('mainContent').innerHTML='<div class="empty"><div class="ei">🔍</div>Aucune donnée</div>';return;}
 
-  if (!weeks.length) {
-    document.getElementById('mainContent').innerHTML = '<div class="empty"><div class="empty-icon">🔍</div>Aucune donnée</div>';
-    return;
-  }
+  function agg(rows,qF,vF){const m={};rows.forEach(r=>{const w=r.week_number;if(!w)return;if(!m[w])m[w]={qty:0,val:0};m[w].qty+=(Number(r[qF])||0);m[w].val+=(Number(r[vF])||0);});return m;}
+  function aggP(rows,qF){const m={};rows.forEach(r=>{const w=r.week_number;if(!w)return;if(!m[w])m[w]={total:0,Poisson:0,Viande:0,Végétarien:0,Volaille:0};const q=Number(r[qF])||0;if(r.protein_type&&m[w][r.protein_type]!==undefined){m[w][r.protein_type]+=q;m[w].total+=q;}});return m;}
+  function avgS(rows){const s={},c={};rows.forEach(r=>{const w=r.week_number;if(!w)return;if(!s[w]){s[w]=0;c[w]=0;}s[w]+=(Number(r.quantity)||0);c[w]++;});const a={};Object.keys(s).forEach(w=>a[w]=c[w]>0?s[w]/c[w]:0);return a;}
 
-  function agg(rows, qF, vF) {
-    const m={};
-    rows.forEach(r=>{const w=r.week_number;if(!w)return;if(!m[w])m[w]={qty:0,val:0};m[w].qty+=(Number(r[qF])||0);m[w].val+=(Number(r[vF])||0);});
-    return m;
-  }
-  function aggProt(rows, qF) {
-    const m={};
-    rows.forEach(r=>{
-      const w=r.week_number;if(!w)return;
-      if(!m[w])m[w]={total:0,Poisson:0,Viande:0,Végétarien:0,Volaille:0};
-      const q=Number(r[qF])||0;
-      if(r.protein_type&&m[w][r.protein_type]!==undefined){m[w][r.protein_type]+=q;m[w].total+=q;}
-    });
-    return m;
-  }
-  function avgStock(rows) {
-    const s={},c={};
-    rows.forEach(r=>{const w=r.week_number;if(!w)return;if(!s[w]){s[w]=0;c[w]=0;}s[w]+=(Number(r.quantity)||0);c[w]++;});
-    const a={};Object.keys(s).forEach(w=>a[w]=c[w]>0?s[w]/c[w]:0);
-    return a;
-  }
-
-  const dA=agg(disp,'quantity','value');
-  const lA=agg(deliv,'quantity_detected','value');
-  const cA=agg(conso,'quantity','value');
-  const lP=aggProt(deliv,'quantity_detected');
-  const cP=aggProt(conso,'quantity');
-  const s12=avgStock(stock12);
+  const dA=agg(disp,'quantity','value'),lA=agg(deliv,'quantity_detected','value'),cA=agg(conso,'quantity','value');
+  const lP=aggP(deliv,'quantity_detected'),cP=aggP(conso,'quantity');
+  const a12=avgS(s12),a6=avgS(s6);
 
   let html='<div class="table-wrapper"><table><thead><tr><th>Indicateur</th>';
   weeks.forEach(w=>html+=`<th>S${w}</th>`);
   html+='</tr></thead><tbody>';
 
-  function row(label, fn, isSection=false, isGachis=false) {
-    const cls=isSection?'row-section':isGachis?'row-gachis':'';
+  function row(label,fn,isS=false,isG=false){
+    const cls=isS?'rs':isG?'rg':'';
     html+=`<tr class="${cls}"><td>${label}</td>`;
     weeks.forEach(w=>html+=`<td>${fn(w)}</td>`);
     html+='</tr>';
@@ -590,175 +499,146 @@ function renderHebdo() {
 
   row('Dispatché',()=>'',true);
   row('Dispatché (unités)',w=>fmt(dA[w]?.qty));
-  row('Valo PAHT€',w=>fmtEuro(dA[w]?.val));
+  row('Valo PAHT€',w=>fmtE(dA[w]?.val));
   row('Livré',()=>'',true);
   row('Livré (unités)',w=>fmt(lA[w]?.qty));
-  row('Valo PAHT€',w=>fmtEuro(lA[w]?.val));
-  row('% vs dispatch',w=>{const p=dA[w]?.qty>0?(lA[w]?.qty||0)/dA[w].qty:null;return fmtPct(p);});
-  ['Poisson','Viande','Végétarien','Volaille'].forEach(p=>
-    row(p+' %',w=>{const d=lP[w];if(!d||d.total===0)return '—';return fmtPct((d[p]||0)/d.total);})
-  );
+  row('Valo PAHT€',w=>fmtE(lA[w]?.val));
+  row('% vs dispatch',w=>{const p=dA[w]?.qty>0?(lA[w]?.qty||0)/dA[w].qty:null;return fmtP(p);});
+  ['Poisson','Viande','Végétarien','Volaille'].forEach(p=>row(p+' %',w=>{const d=lP[w];if(!d||d.total===0)return '—';return fmtP((d[p]||0)/d.total);}));
   row('Consommé',()=>'',true);
   row('Consommé (unités)',w=>fmt(cA[w]?.qty));
-  row('Valo PAHT€',w=>fmtEuro(cA[w]?.val));
-  ['Poisson','Viande','Végétarien','Volaille'].forEach(p=>
-    row(p+' %',w=>{const d=cP[w];if(!d||d.total===0)return '—';return fmtPct((d[p]||0)/d.total);})
-  );
+  row('Valo PAHT€',w=>fmtE(cA[w]?.val));
+  ['Poisson','Viande','Végétarien','Volaille'].forEach(p=>row(p+' %',w=>{const d=cP[w];if(!d||d.total===0)return '—';return fmtP((d[p]||0)/d.total);}));
   row('Stock',()=>'',true);
-  row('Stock moy / réf 12h30',w=>fmt(s12[w],1));
+  row('Stock début de shift (6h)',w=>fmt(a6[w],1));
+  row('Stock moy / réf 12h30',w=>fmt(a12[w],1));
   row('Gâchis',()=>'',true);
   row('Gâchis #',w=>{const g=(lA[w]?.qty||0)-(cA[w]?.qty||0);return fmt(g);},false,true);
-  row('Valo gâchis €',w=>{const g=(lA[w]?.val||0)-(cA[w]?.val||0);return fmtEuro(g);},false,true);
-  row('Gâchis %',w=>{
-    const g=lA[w]?.qty>0?((lA[w].qty-(cA[w]?.qty||0))/lA[w].qty):null;
-    return `<span class="${pctClass(g)}">${fmtPct(g)}</span>`;
-  },false,true);
+  row('Valo gâchis €',w=>fmtE((lA[w]?.val||0)-(cA[w]?.val||0)),false,true);
+  row('Gâchis %',w=>{const g=lA[w]?.qty>0?((lA[w].qty-(cA[w]?.qty||0))/lA[w].qty):null;return `<span class="${pC(g)}">${fmtP(g)}</span>`;},false,true);
 
   html+='</tbody></table></div>';
   document.getElementById('mainContent').innerHTML=html;
 }
 
-// ─── QUOTIDIEN ───────────────────────────────────────────
-function renderQuotidien() {
-  const site=getSite(), cat=getCat(), week=currentWeek;
+// ── QUOTIDIEN ──
+function renderQuotidien(){
+  const site=getSite(),cat=getCat(),week=currentWeek;
   document.getElementById('weekLabel').textContent=`S${week}`;
 
   const DAYS=['lundi','mardi','mercredi','jeudi','vendredi','samedi','dimanche'];
   const DAYS_FR=['Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi','Dimanche'];
-  const dayIdx={};DAYS.forEach((d,i)=>dayIdx[d]=i);
+  const dIdx={};DAYS.forEach((d,i)=>dIdx[d]=i);
 
-  function fw(rows, sf='site') {
-    return rows.filter(r=>{
-      const sOk=site==='all'||r[sf]===site;
-      const cOk=cat==='EPD'?r.epd==='EPD':r.category2===cat;
-      return sOk&&cOk&&r.week_number===week;
-    });
-  }
+  function fw(rows,sf='site'){return rows.filter(r=>{const sOk=site==='all'||r[sf]===site;const cOk=cat==='EPD'?r.epd==='EPD':r.category2===cat;return sOk&&cOk&&r.week_number===week;});}
 
-  const disp=fw(allDispatched);
-  const deliv=fw(allDelivered,'site_name');
-  const conso=fw(allConsumed);
-  const stock12=fw(allStock12h30);
-  const stock6=fw(allStock6h);
-  const preuves=allProofs.filter(r=>{
-    const sOk=site==='all'||r.site===site;
-    return sOk&&r.week_number===week;
+  const disp=fw(allDisp),deliv=fw(allDeliv,'site_name'),conso=fw(allConso);
+  const s12=fw(allS12),s6=fw(allS6);
+  const preuves=allProofs.filter(r=>(site==='all'||r.site===site)&&r.week_number===week);
+
+  // Récupérer les vraies dates de la semaine pour afficher les numéros
+  const dateByDay=Array(7).fill(null);
+  [...disp,...deliv,...conso].forEach(r=>{
+    const dn=(r.day_name||'').toLowerCase();
+    const i=dIdx[dn];
+    const dateStr=r.date||r.delivery_date;
+    if(i!==undefined&&dateStr&&!dateByDay[i])dateByDay[i]=dateStr;
   });
 
-  function aggByDay(rows,qF,vF) {
-    const m=Array(7).fill(null).map(()=>({qty:0,val:0}));
-    rows.forEach(r=>{const i=dayIdx[(r.day_name||'').toLowerCase()];if(i===undefined)return;m[i].qty+=(Number(r[qF])||0);m[i].val+=(Number(r[vF])||0);});
-    return m;
-  }
-  function avgByDay(rows) {
-    const t=Array(7).fill(0),c=Array(7).fill(0);
-    rows.forEach(r=>{const i=dayIdx[(r.day_name||'').toLowerCase()];if(i===undefined)return;t[i]+=(Number(r.quantity)||0);c[i]++;});
-    return t.map((v,i)=>c[i]>0?v/c[i]:0);
-  }
+  function aggD(rows,qF,vF){const m=Array(7).fill(null).map(()=>({qty:0,val:0}));rows.forEach(r=>{const i=dIdx[(r.day_name||'').toLowerCase()];if(i===undefined)return;m[i].qty+=(Number(r[qF])||0);m[i].val+=(Number(r[vF])||0);});return m;}
+  function avgD(rows){const t=Array(7).fill(0),c=Array(7).fill(0);rows.forEach(r=>{const i=dIdx[(r.day_name||'').toLowerCase()];if(i===undefined)return;t[i]+=(Number(r.quantity)||0);c[i]++;});return t.map((v,i)=>c[i]>0?v/c[i]:0);}
 
-  const dA=aggByDay(disp,'quantity','value');
-  const lA=aggByDay(deliv,'quantity_detected','value');
-  const cA=aggByDay(conso,'quantity','value');
-  const s12=avgByDay(stock12);
-  const s6=avgByDay(stock6);
+  const dA=aggD(disp,'quantity','value'),lA=aggD(deliv,'quantity_detected','value'),cA=aggD(conso,'quantity','value');
+  const a12=avgD(s12),a6=avgD(s6);
 
-  const tD=dA.reduce((s,r)=>s+r.qty,0);
-  const tL=lA.reduce((s,r)=>s+r.qty,0);
-  const tC=cA.reduce((s,r)=>s+r.qty,0);
-  const gN=tL-tC, gV=lA.reduce((s,r)=>s+r.val,0)-cA.reduce((s,r)=>s+r.val,0);
+  const tD=dA.reduce((s,r)=>s+r.qty,0),tL=lA.reduce((s,r)=>s+r.qty,0),tC=cA.reduce((s,r)=>s+r.qty,0);
+  const gN=tL-tC,gV=lA.reduce((s,r)=>s+r.val,0)-cA.reduce((s,r)=>s+r.val,0);
   const gP=tL>0?gN/tL:null;
+
+  // En-têtes avec numéro du jour
+  const dayHeaders=DAYS_FR.map((d,i)=>{
+    const dt=dateByDay[i];
+    if(dt){
+      const num=new Date(dt).getDate();
+      return `${d} <span style="font-family:var(--mono);font-size:10px;opacity:0.7">${num}</span>`;
+    }
+    return d;
+  });
 
   let html=`
   <div class="stats-row">
-    <div class="stat-card"><div class="stat-label">Dispatché S${week}</div><div class="stat-value">${fmt(tD)}</div><div class="stat-sub">${fmtEuro(dA.reduce((s,r)=>s+r.val,0))}</div></div>
-    <div class="stat-card"><div class="stat-label">Livré S${week}</div><div class="stat-value">${fmt(tL)}</div><div class="stat-sub">${fmtEuro(lA.reduce((s,r)=>s+r.val,0))}</div></div>
-    <div class="stat-card"><div class="stat-label">Consommé S${week}</div><div class="stat-value">${fmt(tC)}</div><div class="stat-sub">${fmtEuro(cA.reduce((s,r)=>s+r.val,0))}</div></div>
-    <div class="stat-card highlight"><div class="stat-label">Gâchis S${week}</div><div class="stat-value">${fmtPct(gP)}</div><div class="stat-sub">${fmtEuro(gV)} · ${fmt(gN)} unités</div></div>
+    <div class="stat-card"><div class="slabel">Dispatché S${week}</div><div class="sval">${fmt(tD)}</div><div class="ssub">${fmtE(dA.reduce((s,r)=>s+r.val,0))}</div></div>
+    <div class="stat-card"><div class="slabel">Livré S${week}</div><div class="sval">${fmt(tL)}</div><div class="ssub">${fmtE(lA.reduce((s,r)=>s+r.val,0))}</div></div>
+    <div class="stat-card"><div class="slabel">Consommé S${week}</div><div class="sval">${fmt(tC)}</div><div class="ssub">${fmtE(cA.reduce((s,r)=>s+r.val,0))}</div></div>
+    <div class="stat-card hl"><div class="slabel">Gâchis S${week}</div><div class="sval">${fmtP(gP)}</div><div class="ssub">${fmtE(gV)} · ${fmt(gN)} unités</div></div>
   </div>
   <div class="table-wrapper"><table><thead><tr><th>Indicateur</th>`;
+  dayHeaders.forEach(d=>html+=`<th>${d}</th>`);
+  html+='<th class="tcol">Total</th></tr></thead><tbody>';
 
-  DAYS_FR.forEach(d=>html+=`<th>${d}</th>`);
-  html+='<th>Total</th></tr></thead><tbody>';
-
-  function rowD(label,vals,tot,isSection=false,isGachis=false) {
-    const cls=isSection?'row-section':isGachis?'row-gachis':'';
+  function rowD(label,vals,tot,isS=false,isG=false){
+    const cls=isS?'rs':isG?'rg':'';
     html+=`<tr class="${cls}"><td>${label}</td>`;
     vals.forEach(v=>html+=`<td>${v}</td>`);
-    html+=`<td><strong>${tot}</strong></td></tr>`;
+    html+=`<td class="tcol"><strong>${tot}</strong></td></tr>`;
   }
 
   rowD('Dispatché',Array(7).fill(''),'',true);
   rowD('Dispatché (unités)',dA.map(r=>fmt(r.qty)),fmt(tD));
-  rowD('Valo PAHT€',dA.map(r=>fmtEuro(r.val)),fmtEuro(dA.reduce((s,r)=>s+r.val,0)));
+  rowD('Valo PAHT€',dA.map(r=>fmtE(r.val)),fmtE(dA.reduce((s,r)=>s+r.val,0)));
   rowD('Livré',Array(7).fill(''),'',true);
   rowD('Livré (unités)',lA.map(r=>fmt(r.qty)),fmt(tL));
-  rowD('Valo PAHT€',lA.map(r=>fmtEuro(r.val)),fmtEuro(lA.reduce((s,r)=>s+r.val,0)));
-  rowD('% vs dispatch',lA.map((r,i)=>{const p=dA[i].qty>0?r.qty/dA[i].qty:null;return fmtPct(p);}),fmtPct(tD>0?tL/tD:null));
+  rowD('Valo PAHT€',lA.map(r=>fmtE(r.val)),fmtE(lA.reduce((s,r)=>s+r.val,0)));
+  rowD('% vs dispatch',lA.map((r,i)=>{const p=dA[i].qty>0?r.qty/dA[i].qty:null;return fmtP(p);}),fmtP(tD>0?tL/tD:null));
   rowD('Consommé',Array(7).fill(''),'',true);
   rowD('Consommé (unités)',cA.map(r=>fmt(r.qty)),fmt(tC));
-  rowD('Valo PAHT€',cA.map(r=>fmtEuro(r.val)),fmtEuro(cA.reduce((s,r)=>s+r.val,0)));
+  rowD('Valo PAHT€',cA.map(r=>fmtE(r.val)),fmtE(cA.reduce((s,r)=>s+r.val,0)));
   rowD('Stock',Array(7).fill(''),'',true);
-  rowD('Stock début de shift (6h)',s6.map(v=>fmt(v,1)),fmt(s6.reduce((a,v)=>a+v,0)/7,1));
-  rowD('Stock moy / réf 12h30',s12.map(v=>fmt(v,1)),fmt(s12.reduce((a,v)=>a+v,0)/7,1));
+  rowD('Stock début de shift (6h)',a6.map(v=>fmt(v,1)),fmt(a6.reduce((a,v)=>a+v,0)/7,1));
+  rowD('Stock moy / réf 12h30',a12.map(v=>fmt(v,1)),fmt(a12.reduce((a,v)=>a+v,0)/7,1));
+  // Gâchis = total semaine seulement
   rowD('Gâchis',Array(7).fill(''),'',true);
-  rowD('Gâchis #',lA.map((r,i)=>fmt(r.qty-cA[i].qty)),fmt(gN),false,true);
-  rowD('Valo gâchis €',lA.map((r,i)=>fmtEuro(r.val-cA[i].val)),fmtEuro(gV),false,true);
-  rowD('Gâchis %',lA.map((r,i)=>{const p=r.qty>0?(r.qty-cA[i].qty)/r.qty:null;return `<span class="${pctClass(p)}">${fmtPct(p)}</span>`;}),`<span class="${pctClass(gP)}">${fmtPct(gP)}</span>`,false,true);
+  rowD('Gâchis #',Array(7).fill('—'),fmt(gN),false,true);
+  rowD('Valo gâchis €',Array(7).fill('—'),fmtE(gV),false,true);
+  rowD('Gâchis %',Array(7).fill('—'),`<span class="${pC(gP)}">${fmtP(gP)}</span>`,false,true);
 
   html+='</tbody></table></div>';
 
   // Preuves
-  if (preuves.length > 0) {
-    const sorted = preuves.sort((a,b)=>new Date(a.date)-new Date(b.date));
+  if(preuves.length>0){
     html+='<div class="section-title">📸 Preuves de livraison & préparation</div><div class="proofs-grid">';
-    sorted.forEach(r=>{
-      html+=`<div class="proof-card">
-        <div class="proof-header">
-          <span class="proof-site">${r.site||'—'}</span>
-          <span class="proof-date">${frDate(r.date)}</span>
-        </div>
-        <div class="proof-imgs">
-          <div>
-            <div class="proof-img-label">Préparation</div>
-            ${r.preparation_url?`<img class="proof-img" src="${r.preparation_url}" loading="lazy" onclick="window.open('${r.preparation_url}','_blank')" onerror="this.outerHTML='<div class=proof-missing>📷</div>'">`:'<div class="proof-missing">📷</div>'}
-          </div>
-          <div>
-            <div class="proof-img-label">Livraison</div>
-            ${r.delivery_url?`<img class="proof-img" src="${r.delivery_url}" loading="lazy" onclick="window.open('${r.delivery_url}','_blank')" onerror="this.outerHTML='<div class=proof-missing>🚚</div>'">`:'<div class="proof-missing">🚚</div>'}
-          </div>
-        </div>
-      </div>`;
+    preuves.sort((a,b)=>new Date(a.date)-new Date(b.date)).forEach(r=>{
+      const prep=r.preparation_url?`<img class="pimg" src="${r.preparation_url}" loading="lazy" onclick="window.open('${r.preparation_url}','_blank')" onerror="this.outerHTML='<div class=pmiss>📷</div>'">`:'<div class="pmiss">📷</div>';
+      const livr=r.delivery_url?`<img class="pimg" src="${r.delivery_url}" loading="lazy" onclick="window.open('${r.delivery_url}','_blank')" onerror="this.outerHTML='<div class=pmiss>🚚</div>'">`:'<div class="pmiss">🚚</div>';
+      html+=`<div class="proof-card"><div class="proof-header"><span class="proof-site">${r.site||'—'}</span><span class="proof-date">${frDate(r.date,true)}</span></div><div class="proof-imgs"><div><div class="pilbl">Préparation</div>${prep}</div><div><div class="pilbl">Livraison</div>${livr}</div></div></div>`;
     });
     html+='</div>';
   } else {
-    html+=`<div class="section-title">📸 Preuves de livraison & préparation</div><div class="empty" style="padding:30px"><div class="empty-icon">📷</div>Aucune preuve pour S${week}</div>`;
+    html+=`<div class="section-title">📸 Preuves de livraison & préparation</div><div class="empty" style="padding:30px"><div class="ei">📷</div>Aucune preuve pour S${week}</div>`;
   }
-
   document.getElementById('mainContent').innerHTML=html;
 }
 
-// ─── NAV ─────────────────────────────────────────────────
-function switchTab(tab) {
+// ── NAV ──
+function switchTab(tab){
   currentTab=tab;
-  document.querySelectorAll('.tab').forEach((t,i)=>{
-    t.classList.toggle('active',(i===0&&tab==='hebdo')||(i===1&&tab==='quotidien'));
-  });
+  document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',(i===0&&tab==='hebdo')||(i===1&&tab==='quotidien')));
   document.getElementById('weekFilterGroup').classList.toggle('hidden',tab==='hebdo');
   renderCurrentView();
 }
+function changeWeek(d){const i=availableWeeks.indexOf(currentWeek);const ni=i+d;if(ni>=0&&ni<availableWeeks.length)currentWeek=availableWeeks[ni];renderQuotidien();}
+function applyFilters(){renderCurrentView();}
+function renderCurrentView(){if(currentTab==='hebdo')renderHebdo();else renderQuotidien();}
 
-function changeWeek(d) {
-  const idx=availableWeeks.indexOf(currentWeek);
-  const ni=idx+d;
-  if(ni>=0&&ni<availableWeeks.length) currentWeek=availableWeeks[ni];
-  renderQuotidien();
-}
-
-function applyFilters() { renderCurrentView(); }
-function renderCurrentView() {
-  if(currentTab==='hebdo') renderHebdo();
-  else renderQuotidien();
-}
+// Init years on load
+sb.auth.getSession().then(({data:{session}})=>{
+  if(session){
+    document.getElementById('authScreen').style.display='none';
+    document.getElementById('appScreen').style.display='block';
+    document.getElementById('userBadge').textContent=session.user.email;
+    loadAvailableYears().then(()=>loadData());
+  }
+});
 </script>
 </body>
 </html>
