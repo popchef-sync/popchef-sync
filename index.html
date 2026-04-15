@@ -403,7 +403,7 @@ async function fetchTable(table,year){
   return all;
 }
 
-async function loadAvailableYears(){
+
   // Récupère les années disponibles depuis la table dispatched
   const{data,error}=await sb.from('dispatched').select('year').order('year',{ascending:false});
   if(!error&&data){
@@ -598,9 +598,9 @@ function renderQuotidien(){
   rowD('Stock moy / réf 12h30',a12.map(v=>fmt(v,1)),fmt(a12.reduce((a,v)=>a+v,0)/7,1));
   // Gâchis = total semaine seulement
   rowD('Gâchis',Array(7).fill(''),'',true);
-  rowD('Gâchis #',Array(7).fill('—'),fmt(gN),false,true);
-  rowD('Valo gâchis €',Array(7).fill('—'),fmtE(gV),false,true);
-  rowD('Gâchis %',Array(7).fill('—'),`<span class="${pC(gP)}">${fmtP(gP)}</span>`,false,true);
+  rowD('Gâchis #',Array(7).fill(''),fmt(gN),false,true);
+  rowD('Valo gâchis €',Array(7).fill(''),fmtE(gV),false,true);
+  rowD('Gâchis %',Array(7).fill(''),`<span class="${pC(gP)}">${fmtP(gP)}</span>`,false,true);
 
   html+='</tbody></table></div>';
 
