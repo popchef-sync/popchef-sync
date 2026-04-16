@@ -366,7 +366,11 @@ function fetchTable(table, year) {
 }
 
 function loadAvailableYears() {
-  return sb.from('dispatched').select('year').then(function(res) {
+  // Utilise une requête groupée pour avoir toutes les années sans limite
+  return sb.rpc('get_distinct_years').then(function(res) {
+    if (res.error || !res.data) {
+      // Fallback : années fixes
+      var years = [2026, 2025];
     var years = [];
     if (!res.error && res.data) {
       var ySet = {};
