@@ -272,7 +272,9 @@ tbody tr:hover td:first-child{background:rgba(99,18,72,0.06);}
 const SUPA_URL='https://nnwvovoxdejjxlxlqqjv.supabase.co';
 const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5ud3Zvdm94ZGVqanhseGxxcWp2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU5MTA5OTMsImV4cCI6MjA5MTQ4Njk5M30.otwWgQi5YFeYfsDUjRQPcFg2RqlZpgTyRvoOK4R-n5k';
 const sb=supabase.createClient(SUPA_URL,SUPA_KEY);
-
+// Test connexion Supabase au chargement
+console.log('Supabase initialisé:', !!sb);
+  
 let currentTab='hebdo', currentWeek=1, currentYear=new Date().getFullYear();
 let availableWeeks=[], availableYears=[];
 let allDisp=[], allDeliv=[], allConso=[], allS12=[], allS6=[], allProofs=[];
