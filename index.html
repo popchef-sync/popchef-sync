@@ -57,7 +57,7 @@ body{background:var(--beurre);color:var(--fusain);font-family:var(--sans);font-s
 .table-wrapper{overflow-x:auto;border-radius:8px;border:1.5px solid var(--border);box-shadow:0 2px 12px rgba(99,18,72,0.08);background:var(--blanc);margin-bottom:28px;}
 table{border-collapse:collapse;width:100%;min-width:800px;}
 th,td{padding:9px 14px;text-align:right;white-space:nowrap;border-bottom:1px solid var(--border);font-size:12px;}
-th:first-child,td:first-child{text-align:left;position:sticky;left:0;z-index:3;min-width:220px;font-weight:600;background:var(--blanc);border-right:2px solid rgba(99,18,72,0.2);box-shadow:3px 0 6px rgba(99,18,72,0.08);}
+th:first-child,td:first-child{text-align:left;position:sticky;left:0;z-index:3;min-width:240px;font-weight:600;background:var(--blanc);border-right:2px solid rgba(99,18,72,0.2);box-shadow:3px 0 6px rgba(99,18,72,0.08);}
 thead th{background:var(--aubergine);color:var(--beurre);font-family:var(--mono);font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:0.5px;border-bottom:none;z-index:4;}
 thead th:first-child{background:var(--aubergine);color:var(--beurre);z-index:5;}
 tbody tr:last-child td{border-bottom:none;}
@@ -87,7 +87,7 @@ tbody tr:hover td:first-child{background:rgba(99,18,72,0.06);}
 .proofs-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px;}
 .proof-card{background:var(--blanc);border:1.5px solid var(--border);border-radius:8px;overflow:hidden;box-shadow:0 2px 8px rgba(99,18,72,0.06);}
 .proof-header{background:var(--aubergine);padding:10px 14px;display:flex;justify-content:space-between;align-items:center;}
-.proof-site{font-size:11px;font-weight:700;color:var(--beurre);text-transform:uppercase;letter-spacing:0.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:160px;}
+.proof-site{font-size:11px;font-weight:700;color:var(--beurre);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:160px;}
 .proof-date{font-size:10px;color:rgba(252,247,226,0.6);font-family:var(--mono);}
 .proof-imgs{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:12px;}
 .pilbl{font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;font-family:var(--mono);}
@@ -114,10 +114,7 @@ tbody tr:hover td:first-child{background:rgba(99,18,72,0.06);}
     <input class="auth-input" type="email" id="loginEmail" placeholder="votre@popchef.com">
     <input class="auth-input" type="password" id="loginPassword" placeholder="Mot de passe">
     <button class="auth-btn" id="loginBtn">Se connecter</button>
-    <div class="auth-link">
-      <a id="toForgot">Mot de passe oublié ?</a> &nbsp;·&nbsp;
-      <a id="toRegister">Créer un compte</a>
-    </div>
+    <div class="auth-link"><a id="toForgot">Mot de passe oublié ?</a> &nbsp;·&nbsp; <a id="toRegister">Créer un compte</a></div>
   </div>
   <div id="registerForm" class="hidden">
     <div class="auth-title">Créer un compte</div>
@@ -183,452 +180,454 @@ tbody tr:hover td:first-child{background:rgba(99,18,72,0.06);}
     <div class="fg"><span class="fl">Année :</span><select class="fsel" id="yearFilter" style="min-width:90px"></select></div>
     <div class="fg"><span class="fl">Client :</span><select class="fsel" id="siteFilter" style="min-width:200px"><option value="all">Emplacement (tous)</option></select></div>
     <div class="fg"><span class="fl">Catégorie :</span><select class="fsel" id="catFilter"><option value="EPD">TOTAL (EPD)</option><option value="Dish">Dish</option><option value="Starter">Starter</option><option value="Snacking">Snacking</option><option value="Dessert">Dessert</option></select></div>
-    <div class="fg hidden" id="weekFilterGroup"><span class="fl">Semaine :</span><div class="week-nav"><button class="wbtn" id="prevWeek">‹</button><span class="wlbl" id="weekLabel">S1</span><button class="wbtn" id="nextWeek">›</button></div></div>
+    <div class="fg hidden" id="weekFilterGroup"><span class="fl">Semaine :</span><div class="week-nav"><button class="wbtn" id="prevWeek">&#8249;</button><span class="wlbl" id="weekLabel">S1</span><button class="wbtn" id="nextWeek">&#8250;</button></div></div>
   </div>
   <div class="content" id="mainContent"><div class="loading"><div class="spinner"></div> Chargement...</div></div>
 </div>
 
 <script>
 (function() {
-'use strict';
+  var SUPA_URL = 'https://nnwvovoxdejjxlxlqqjv.supabase.co';
+  var SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5ud3Zvdm94ZGVqanhseGxxcWp2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU5MTA5OTMsImV4cCI6MjA5MTQ4Njk5M30.otwWgQi5YFeYfsDUjRQPcFg2RqlZpgTyRvoOK4R-n5k';
+  var sb = window.supabase.createClient(SUPA_URL, SUPA_KEY);
 
-// ── INIT SUPABASE ──
-const SUPA_URL = 'https://nnwvovoxdejjxlxlqqjv.supabase.co';
-const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5ud3Zvdm94ZGVqanhseGxxcWp2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU5MTA5OTMsImV4cCI6MjA5MTQ4Njk5M30.otwWgQi5YFeYfsDUjRQPcFg2RqlZpgTyRvoOK4R-n5k';
-const sb = window.supabase.createClient(SUPA_URL, SUPA_KEY);
+  var currentTab = 'hebdo';
+  var currentWeek = 1;
+  var currentYear = new Date().getFullYear();
+  var availableWeeks = [];
+  var allDisp = [], allDeliv = [], allConso = [], allS12 = [], allS6 = [], allProofs = [];
 
-// ── STATE ──
-let currentTab = 'hebdo';
-let currentWeek = 1;
-let currentYear = new Date().getFullYear();
-let availableWeeks = [];
-let allDisp = [], allDeliv = [], allConso = [], allS12 = [], allS6 = [], allProofs = [];
+  function el(id) { return document.getElementById(id); }
 
-// ── HELPERS ──
-function $(id) { return document.getElementById(id); }
-function fmt(n, d) { d = d || 0; if (n === null || n === undefined || isNaN(n)) return '—'; return new Intl.NumberFormat('fr-FR', {minimumFractionDigits: d, maximumFractionDigits: d}).format(n); }
-function fmtE(n) { if (n === null || n === undefined || isNaN(n)) return '—'; return new Intl.NumberFormat('fr-FR', {style:'currency', currency:'EUR', minimumFractionDigits:0, maximumFractionDigits:0}).format(n); }
-function fmtP(n) { if (n === null || n === undefined || isNaN(n) || !isFinite(n)) return '—'; return fmt(n*100, 1) + '%'; }
-function pC(n) { if (!n || !isFinite(n) || n <= 0) return 'c-green'; return n > 0.20 ? 'c-red' : 'c-green'; }
-function frDate(d) { if (!d) return ''; var dt = new Date(d); return dt.toLocaleDateString('fr-FR', {day:'2-digit', month:'2-digit'}); }
-function amsg(id, text, type) { $(id).innerHTML = '<div class="auth-msg ' + (type || 'error') + '">' + text + '</div>'; }
-function showOnly(formId) {
-  ['loginForm','registerForm','forgotForm','resetForm','confirmForm','accountForm'].forEach(function(id) {
-    $(id).classList.add('hidden');
-  });
-  $(formId).classList.remove('hidden');
-}
-function getSite() { return $('siteFilter').value; }
-function getCat() { return $('catFilter').value; }
-function getYear() { return parseInt($('yearFilter').value); }
-
-// ── AUTH EVENTS ──
-$('loginBtn').addEventListener('click', doLogin);
-$('registerBtn').addEventListener('click', doRegister);
-$('forgotBtn').addEventListener('click', doForgot);
-$('resetBtn').addEventListener('click', doReset);
-$('changePwdBtn').addEventListener('click', doChangePwd);
-$('toRegister').addEventListener('click', function() { showOnly('registerForm'); });
-$('toForgot').addEventListener('click', function() { showOnly('forgotForm'); });
-$('toLogin1').addEventListener('click', function() { showOnly('loginForm'); });
-$('toLogin2').addEventListener('click', function() { showOnly('loginForm'); });
-$('toLogin3').addEventListener('click', function() { showOnly('loginForm'); });
-$('backToApp').addEventListener('click', function() { $('authScreen').style.display = 'none'; $('appScreen').style.display = 'block'; });
-$('accountBtn').addEventListener('click', function() {
-  $('appScreen').style.display = 'none';
-  $('authScreen').style.display = 'flex';
-  showOnly('accountForm');
-  sb.auth.getUser().then(function(res) { if (res.data && res.data.user) $('accountEmail').textContent = res.data.user.email; });
-});
-$('logoutBtn').addEventListener('click', function() { sb.auth.signOut(); });
-$('tabHebdo').addEventListener('click', function() { switchTab('hebdo'); });
-$('tabQuotidien').addEventListener('click', function() { switchTab('quotidien'); });
-$('prevWeek').addEventListener('click', function() { changeWeek(-1); });
-$('nextWeek').addEventListener('click', function() { changeWeek(1); });
-$('yearFilter').addEventListener('change', function() { loadData(); });
-$('siteFilter').addEventListener('change', function() { renderCurrentView(); });
-$('catFilter').addEventListener('change', function() { renderCurrentView(); });
-
-document.addEventListener('keydown', function(e) {
-  if (e.key !== 'Enter') return;
-  if (!$('loginForm').classList.contains('hidden')) doLogin();
-  else if (!$('registerForm').classList.contains('hidden')) doRegister();
-  else if (!$('forgotForm').classList.contains('hidden')) doForgot();
-  else if (!$('resetForm').classList.contains('hidden')) doReset();
-});
-
-// ── AUTH FUNCTIONS ──
-function doLogin() {
-  var email = $('loginEmail').value.trim();
-  var pwd = $('loginPassword').value;
-  if (!email.endsWith('@popchef.com')) { amsg('loginMsg', '❌ Seuls les emails @popchef.com sont autorisés.'); return; }
-  if (!pwd) { amsg('loginMsg', '❌ Veuillez saisir votre mot de passe.'); return; }
-  var btn = $('loginBtn');
-  btn.disabled = true; btn.textContent = 'Connexion...';
-  sb.auth.signInWithPassword({email: email, password: pwd}).then(function(res) {
-    btn.disabled = false; btn.textContent = 'Se connecter';
-    if (res.error) amsg('loginMsg', '❌ ' + (res.error.message === 'Invalid login credentials' ? 'Email ou mot de passe incorrect.' : res.error.message));
-  });
-}
-
-function doRegister() {
-  var email = $('regEmail').value.trim();
-  var pwd = $('regPwd').value;
-  var pwd2 = $('regPwd2').value;
-  if (!email.endsWith('@popchef.com')) { amsg('registerMsg', '❌ Seuls les emails @popchef.com sont autorisés.'); return; }
-  if (pwd.length < 8) { amsg('registerMsg', '❌ Minimum 8 caractères.'); return; }
-  if (pwd !== pwd2) { amsg('registerMsg', '❌ Les mots de passe ne correspondent pas.'); return; }
-  var btn = $('registerBtn');
-  btn.disabled = true; btn.textContent = 'Création...';
-  sb.auth.signUp({email: email, password: pwd, options: {emailRedirectTo: window.location.href}}).then(function(res) {
-    btn.disabled = false; btn.textContent = 'Créer mon compte';
-    if (res.error) amsg('registerMsg', '❌ ' + res.error.message);
-    else showOnly('confirmForm');
-  });
-}
-
-function doForgot() {
-  var email = $('forgotEmail').value.trim();
-  if (!email.endsWith('@popchef.com')) { amsg('forgotMsg', '❌ Seuls les emails @popchef.com sont autorisés.'); return; }
-  sb.auth.resetPasswordForEmail(email, {redirectTo: window.location.origin + window.location.pathname + '?reset=1'}).then(function(res) {
-    if (res.error) amsg('forgotMsg', '❌ ' + res.error.message);
-    else amsg('forgotMsg', '✅ Email envoyé ! Vérifiez votre boîte mail.', 'success');
-  });
-}
-
-function doReset() {
-  var pwd = $('resetPwd').value;
-  var pwd2 = $('resetPwd2').value;
-  if (pwd.length < 8) { amsg('resetMsg', '❌ Minimum 8 caractères.'); return; }
-  if (pwd !== pwd2) { amsg('resetMsg', '❌ Les mots de passe ne correspondent pas.'); return; }
-  sb.auth.updateUser({password: pwd}).then(function(res) {
-    if (res.error) amsg('resetMsg', '❌ ' + res.error.message);
-    else { amsg('resetMsg', '✅ Mot de passe mis à jour ! Reconnexion...', 'success'); setTimeout(function() { sb.auth.signOut(); }, 2000); }
-  });
-}
-
-function doChangePwd() {
-  var pwd = $('newPwd').value;
-  var pwd2 = $('newPwd2').value;
-  if (pwd.length < 8) { amsg('accountMsg', '❌ Minimum 8 caractères.'); return; }
-  if (pwd !== pwd2) { amsg('accountMsg', '❌ Les mots de passe ne correspondent pas.'); return; }
-  sb.auth.updateUser({password: pwd}).then(function(res) {
-    if (res.error) amsg('accountMsg', '❌ ' + res.error.message);
-    else amsg('accountMsg', '✅ Mot de passe mis à jour !', 'success');
-  });
-}
-
-// ── AUTH STATE ──
-sb.auth.onAuthStateChange(function(event, session) {
-  if (event === 'PASSWORD_RECOVERY') {
-    $('appScreen').style.display = 'none';
-    $('authScreen').style.display = 'flex';
-    showOnly('resetForm');
-  } else if (event === 'SIGNED_IN' && session) {
-    $('authScreen').style.display = 'none';
-    $('appScreen').style.display = 'block';
-    $('userBadge').textContent = session.user.email;
-    loadAvailableYears().then(function() { loadData(); });
-  } else if (event === 'SIGNED_OUT') {
-    $('authScreen').style.display = 'flex';
-    $('appScreen').style.display = 'none';
-    showOnly('loginForm');
+  function fmt(n, d) {
+    if (n === null || n === undefined || isNaN(n)) return '—';
+    return new Intl.NumberFormat('fr-FR', {minimumFractionDigits: d || 0, maximumFractionDigits: d || 0}).format(n);
   }
-});
-
-// Check reset token
-if (window.location.search.indexOf('reset=1') > -1 || window.location.hash.indexOf('type=recovery') > -1) {
-  showOnly('resetForm');
-}
-
-// Check existing session
-sb.auth.getSession().then(function(res) {
-  if (res.data && res.data.session) {
-    $('authScreen').style.display = 'none';
-    $('appScreen').style.display = 'block';
-    $('userBadge').textContent = res.data.session.user.email;
-    loadAvailableYears().then(function() { loadData(); });
+  function fmtE(n) {
+    if (n === null || n === undefined || isNaN(n)) return '—';
+    return new Intl.NumberFormat('fr-FR', {style:'currency',currency:'EUR',minimumFractionDigits:0,maximumFractionDigits:0}).format(n);
   }
-});
+  function fmtP(n) {
+    if (n === null || n === undefined || isNaN(n) || !isFinite(n)) return '—';
+    return fmt(n * 100, 1) + '%';
+  }
+  function pC(n) {
+    if (!n || !isFinite(n) || n <= 0) return 'c-green';
+    return n > 0.20 ? 'c-red' : 'c-green';
+  }
+  function frDate(d) {
+    if (!d) return '';
+    return new Date(d).toLocaleDateString('fr-FR', {day:'2-digit', month:'2-digit'});
+  }
+  function amsg(id, text, type) {
+    el(id).innerHTML = '<div class="auth-msg ' + (type || 'error') + '">' + text + '</div>';
+  }
+  function showOnly(fid) {
+    var forms = ['loginForm','registerForm','forgotForm','resetForm','confirmForm','accountForm'];
+    for (var i = 0; i < forms.length; i++) el(forms[i]).classList.add('hidden');
+    el(fid).classList.remove('hidden');
+  }
+  function getSite() { return el('siteFilter').value; }
+  function getCat() { return el('catFilter').value; }
+  function getYear() { return parseInt(el('yearFilter').value); }
 
-// ── DATA ──
-function fetchTable(table, year) {
-  var all = [];
-  function fetchPage(from) {
-    return sb.from(table).select('*').eq('year', year).range(from, from + 999).then(function(res) {
-      if (res.error) throw new Error(table + ': ' + res.error.message);
-      all = all.concat(res.data);
-      if (res.data.length === 1000) return fetchPage(from + 1000);
-      return all;
+  // Events
+  el('loginBtn').addEventListener('click', doLogin);
+  el('registerBtn').addEventListener('click', doRegister);
+  el('forgotBtn').addEventListener('click', doForgot);
+  el('resetBtn').addEventListener('click', doReset);
+  el('changePwdBtn').addEventListener('click', doChangePwd);
+  el('toRegister').addEventListener('click', function() { showOnly('registerForm'); });
+  el('toForgot').addEventListener('click', function() { showOnly('forgotForm'); });
+  el('toLogin1').addEventListener('click', function() { showOnly('loginForm'); });
+  el('toLogin2').addEventListener('click', function() { showOnly('loginForm'); });
+  el('toLogin3').addEventListener('click', function() { showOnly('loginForm'); });
+  el('backToApp').addEventListener('click', function() {
+    el('authScreen').style.display = 'none';
+    el('appScreen').style.display = 'block';
+  });
+  el('accountBtn').addEventListener('click', function() {
+    el('appScreen').style.display = 'none';
+    el('authScreen').style.display = 'flex';
+    showOnly('accountForm');
+    sb.auth.getUser().then(function(r) {
+      if (r.data && r.data.user) el('accountEmail').textContent = r.data.user.email;
+    });
+  });
+  el('logoutBtn').addEventListener('click', function() { sb.auth.signOut(); });
+  el('tabHebdo').addEventListener('click', function() { switchTab('hebdo'); });
+  el('tabQuotidien').addEventListener('click', function() { switchTab('quotidien'); });
+  el('prevWeek').addEventListener('click', function() { changeWeek(-1); });
+  el('nextWeek').addEventListener('click', function() { changeWeek(1); });
+  el('yearFilter').addEventListener('change', loadData);
+  el('siteFilter').addEventListener('change', renderCurrentView);
+  el('catFilter').addEventListener('change', renderCurrentView);
+
+  document.addEventListener('keydown', function(e) {
+    if (e.key !== 'Enter') return;
+    if (!el('loginForm').classList.contains('hidden')) doLogin();
+    else if (!el('registerForm').classList.contains('hidden')) doRegister();
+    else if (!el('forgotForm').classList.contains('hidden')) doForgot();
+    else if (!el('resetForm').classList.contains('hidden')) doReset();
+  });
+
+  function doLogin() {
+    var email = el('loginEmail').value.trim();
+    var pwd = el('loginPassword').value;
+    if (!email.endsWith('@popchef.com')) { amsg('loginMsg', '❌ Seuls les emails @popchef.com sont autorisés.'); return; }
+    if (!pwd) { amsg('loginMsg', '❌ Veuillez saisir votre mot de passe.'); return; }
+    var btn = el('loginBtn');
+    btn.disabled = true; btn.textContent = 'Connexion...';
+    sb.auth.signInWithPassword({email: email, password: pwd}).then(function(r) {
+      btn.disabled = false; btn.textContent = 'Se connecter';
+      if (r.error) amsg('loginMsg', '❌ ' + (r.error.message === 'Invalid login credentials' ? 'Email ou mot de passe incorrect.' : r.error.message));
     });
   }
-  return fetchPage(0);
-}
 
-function loadAvailableYears() {
-  // Utilise une requête groupée pour avoir toutes les années sans limite
-  return sb.rpc('get_distinct_years').then(function(res) {
-    if (res.error || !res.data) {
-      // Fallback : années fixes
-      var years = [2026, 2025];
-    var years = [];
-    if (!res.error && res.data) {
-      var ySet = {};
-      res.data.forEach(function(r) { if (r.year) ySet[r.year] = true; });
-      years = Object.keys(ySet).map(Number).sort(function(a,b) { return b-a; });
+  function doRegister() {
+    var email = el('regEmail').value.trim();
+    var pwd = el('regPwd').value;
+    var pwd2 = el('regPwd2').value;
+    if (!email.endsWith('@popchef.com')) { amsg('registerMsg', '❌ Seuls les emails @popchef.com sont autorisés.'); return; }
+    if (pwd.length < 8) { amsg('registerMsg', '❌ Minimum 8 caractères.'); return; }
+    if (pwd !== pwd2) { amsg('registerMsg', '❌ Les mots de passe ne correspondent pas.'); return; }
+    var btn = el('registerBtn');
+    btn.disabled = true; btn.textContent = 'Création...';
+    sb.auth.signUp({email: email, password: pwd, options: {emailRedirectTo: window.location.href}}).then(function(r) {
+      btn.disabled = false; btn.textContent = 'Créer mon compte';
+      if (r.error) amsg('registerMsg', '❌ ' + r.error.message);
+      else showOnly('confirmForm');
+    });
+  }
+
+  function doForgot() {
+    var email = el('forgotEmail').value.trim();
+    if (!email.endsWith('@popchef.com')) { amsg('forgotMsg', '❌ Seuls les emails @popchef.com sont autorisés.'); return; }
+    sb.auth.resetPasswordForEmail(email, {redirectTo: window.location.origin + window.location.pathname + '?reset=1'}).then(function(r) {
+      if (r.error) amsg('forgotMsg', '❌ ' + r.error.message);
+      else amsg('forgotMsg', '✅ Email envoyé ! Vérifiez votre boîte mail.', 'success');
+    });
+  }
+
+  function doReset() {
+    var pwd = el('resetPwd').value;
+    var pwd2 = el('resetPwd2').value;
+    if (pwd.length < 8) { amsg('resetMsg', '❌ Minimum 8 caractères.'); return; }
+    if (pwd !== pwd2) { amsg('resetMsg', '❌ Les mots de passe ne correspondent pas.'); return; }
+    sb.auth.updateUser({password: pwd}).then(function(r) {
+      if (r.error) amsg('resetMsg', '❌ ' + r.error.message);
+      else { amsg('resetMsg', '✅ Mis à jour ! Reconnexion...', 'success'); setTimeout(function() { sb.auth.signOut(); }, 2000); }
+    });
+  }
+
+  function doChangePwd() {
+    var pwd = el('newPwd').value;
+    var pwd2 = el('newPwd2').value;
+    if (pwd.length < 8) { amsg('accountMsg', '❌ Minimum 8 caractères.'); return; }
+    if (pwd !== pwd2) { amsg('accountMsg', '❌ Les mots de passe ne correspondent pas.'); return; }
+    sb.auth.updateUser({password: pwd}).then(function(r) {
+      if (r.error) amsg('accountMsg', '❌ ' + r.error.message);
+      else amsg('accountMsg', '✅ Mot de passe mis à jour !', 'success');
+    });
+  }
+
+  sb.auth.onAuthStateChange(function(event, session) {
+    if (event === 'PASSWORD_RECOVERY') {
+      el('appScreen').style.display = 'none';
+      el('authScreen').style.display = 'flex';
+      showOnly('resetForm');
+    } else if (event === 'SIGNED_IN' && session) {
+      el('authScreen').style.display = 'none';
+      el('appScreen').style.display = 'block';
+      el('userBadge').textContent = session.user.email;
+      loadAvailableYears();
+    } else if (event === 'SIGNED_OUT') {
+      el('authScreen').style.display = 'flex';
+      el('appScreen').style.display = 'none';
+      showOnly('loginForm');
     }
-    if (years.length === 0) { years = [new Date().getFullYear(), new Date().getFullYear()-1]; }
-    var sel = $('yearFilter');
-    var prev = parseInt(sel.value) || currentYear;
-    sel.innerHTML = '';
-    years.forEach(function(y) {
-      var o = document.createElement('option');
-      o.value = y; o.textContent = y;
-      if (y === prev) o.selected = true;
-      sel.appendChild(o);
-    });
-    currentYear = parseInt(sel.value);
   });
-}
 
-function loadData() {
-  var year = getYear();
-  currentYear = year;
-  $('mainContent').innerHTML = '<div class="loading"><div class="spinner"></div> Chargement ' + year + '...</div>';
-
-  Promise.all([
-    fetchTable('dispatched', year),
-    fetchTable('delivered', year),
-    fetchTable('consumed', year),
-    fetchTable('stock_12h30', year),
-    fetchTable('stock_6h', year),
-    fetchTable('delivery_proofs', year)
-  ]).then(function(results) {
-    allDisp = results[0]; allDeliv = results[1]; allConso = results[2];
-    allS12 = results[3]; allS6 = results[4]; allProofs = results[5];
-
-    // Sites
-    var siteSet = {};
-    allDisp.forEach(function(r) { if (r.site) siteSet[r.site] = true; });
-    allDeliv.forEach(function(r) { if (r.site_name) siteSet[r.site_name] = true; });
-    var sites = Object.keys(siteSet).sort();
-    var sel = $('siteFilter');
-    var prev = sel.value;
-    sel.innerHTML = '<option value="all">Emplacement (tous)</option>';
-    sites.forEach(function(s) { var o = document.createElement('option'); o.value = s; o.textContent = s; if (s === prev) o.selected = true; sel.appendChild(o); });
-
-    // Weeks
-    var wSet = {};
-    allDisp.forEach(function(r) { if (r.week_number) wSet[r.week_number] = true; });
-    allDeliv.forEach(function(r) { if (r.week_number) wSet[r.week_number] = true; });
-    allConso.forEach(function(r) { if (r.week_number) wSet[r.week_number] = true; });
-    availableWeeks = Object.keys(wSet).map(Number).sort(function(a,b) { return a-b; });
-    currentWeek = availableWeeks[availableWeeks.length - 1] || 1;
-
-    var total = allDisp.length + allDeliv.length + allConso.length;
-    $('syncInfo').textContent = total.toLocaleString('fr-FR') + ' lignes · ' + new Date().toLocaleDateString('fr-FR');
-    renderCurrentView();
-  }).catch(function(e) {
-    $('mainContent').innerHTML = '<div class="error-box">❌ ' + e.message + '</div>';
-  });
-}
-
-// ── FILTER ──
-function filt(rows, site, cat, sf) {
-  sf = sf || 'site';
-  return rows.filter(function(r) {
-    var sOk = site === 'all' || r[sf] === site;
-    var cOk = cat === 'EPD' ? r.epd === 'EPD' : r.category2 === cat;
-    return sOk && cOk;
-  });
-}
-
-// ── HEBDO ──
-function renderHebdo() {
-  var site = getSite(), cat = getCat();
-  var disp = filt(allDisp, site, cat);
-  var deliv = filt(allDeliv, site, cat, 'site_name');
-  var conso = filt(allConso, site, cat);
-  var s12 = filt(allS12, site, cat);
-  var s6 = filt(allS6, site, cat);
-
-  var wSet = {};
-  disp.forEach(function(r) { if (r.week_number) wSet[r.week_number] = true; });
-  deliv.forEach(function(r) { if (r.week_number) wSet[r.week_number] = true; });
-  conso.forEach(function(r) { if (r.week_number) wSet[r.week_number] = true; });
-  var weeks = Object.keys(wSet).map(Number).sort(function(a,b) { return a-b; });
-
-  if (!weeks.length) { $('mainContent').innerHTML = '<div class="empty"><div class="ei">🔍</div>Aucune donnée</div>'; return; }
-
-  function agg(rows, qF, vF) { var m = {}; rows.forEach(function(r) { var w = r.week_number; if (!w) return; if (!m[w]) m[w] = {qty:0,val:0}; m[w].qty += (Number(r[qF])||0); m[w].val += (Number(r[vF])||0); }); return m; }
-  function aggP(rows, qF) { var m = {}; rows.forEach(function(r) { var w = r.week_number; if (!w) return; if (!m[w]) m[w] = {total:0,Poisson:0,Viande:0,'Végétarien':0,Volaille:0}; var q = Number(r[qF])||0; if (r.protein_type && m[w][r.protein_type] !== undefined) { m[w][r.protein_type] += q; m[w].total += q; } }); return m; }
-  function avgS(rows) { var s = {}, c = {}; rows.forEach(function(r) { var w = r.week_number; if (!w) return; if (!s[w]) { s[w]=0; c[w]=0; } s[w] += (Number(r.quantity)||0); c[w]++; }); var a = {}; Object.keys(s).forEach(function(w) { a[w] = c[w]>0 ? s[w]/c[w] : 0; }); return a; }
-
-  var dA=agg(disp,'quantity','value'), lA=agg(deliv,'quantity_detected','value'), cA=agg(conso,'quantity','value');
-  var lP=aggP(deliv,'quantity_detected'), cP=aggP(conso,'quantity');
-  var a12=avgS(s12), a6=avgS(s6);
-
-  var html = '<div class="table-wrapper"><table><thead><tr><th>Indicateur</th>';
-  weeks.forEach(function(w) { html += '<th>S' + w + '</th>'; });
-  html += '</tr></thead><tbody>';
-
-  function row(label, fn, isS, isG) {
-    var cls = isS ? 'rs' : isG ? 'rg' : '';
-    html += '<tr class="' + cls + '"><td>' + label + '</td>';
-    weeks.forEach(function(w) { html += '<td>' + fn(w) + '</td>'; });
-    html += '</tr>';
+  if (window.location.search.indexOf('reset=1') > -1 || window.location.hash.indexOf('type=recovery') > -1) {
+    showOnly('resetForm');
   }
 
-  row('Dispatché', function() { return ''; }, true);
-  row('Dispatché (unités)', function(w) { return fmt(dA[w] && dA[w].qty); });
-  row('Valo PAHT€', function(w) { return fmtE(dA[w] && dA[w].val); });
-  row('Livré', function() { return ''; }, true);
-  row('Livré (unités)', function(w) { return fmt(lA[w] && lA[w].qty); });
-  row('Valo PAHT€', function(w) { return fmtE(lA[w] && lA[w].val); });
-  row('% vs dispatch', function(w) { var p = dA[w] && dA[w].qty > 0 ? (lA[w] ? lA[w].qty : 0)/dA[w].qty : null; return fmtP(p); });
-  ['Poisson','Viande','Végétarien','Volaille'].forEach(function(p) {
-    row(p + ' %', function(w) { var d = lP[w]; if (!d || d.total===0) return '—'; return fmtP((d[p]||0)/d.total); });
+  sb.auth.getSession().then(function(r) {
+    if (r.data && r.data.session) {
+      el('authScreen').style.display = 'none';
+      el('appScreen').style.display = 'block';
+      el('userBadge').textContent = r.data.session.user.email;
+      loadAvailableYears();
+    }
   });
-  row('Consommé', function() { return ''; }, true);
-  row('Consommé (unités)', function(w) { return fmt(cA[w] && cA[w].qty); });
-  row('Valo PAHT€', function(w) { return fmtE(cA[w] && cA[w].val); });
-  ['Poisson','Viande','Végétarien','Volaille'].forEach(function(p) {
-    row(p + ' %', function(w) { var d = cP[w]; if (!d || d.total===0) return '—'; return fmtP((d[p]||0)/d.total); });
-  });
-  row('Stock', function() { return ''; }, true);
-  row('Stock début de shift (6h)', function(w) { return fmt(a6[w], 1); });
-  row('Stock moy / réf 12h30', function(w) { return fmt(a12[w], 1); });
-  row('Gâchis', function() { return ''; }, true);
-  row('Gâchis #', function(w) { return fmt((lA[w]?lA[w].qty:0)-(cA[w]?cA[w].qty:0)); }, false, true);
-  row('Valo gâchis €', function(w) { return fmtE((lA[w]?lA[w].val:0)-(cA[w]?cA[w].val:0)); }, false, true);
-  row('Gâchis %', function(w) {
-    var g = lA[w] && lA[w].qty > 0 ? (lA[w].qty-(cA[w]?cA[w].qty:0))/lA[w].qty : null;
-    return '<span class="' + pC(g) + '">' + fmtP(g) + '</span>';
-  }, false, true);
 
-  html += '</tbody></table></div>';
-  $('mainContent').innerHTML = html;
-}
+  // ── DATA ──
+  function fetchTable(table, year) {
+    var all = [];
+    function page(from) {
+      return sb.from(table).select('*').eq('year', year).range(from, from + 999).then(function(r) {
+        if (r.error) throw new Error(table + ': ' + r.error.message);
+        all = all.concat(r.data);
+        if (r.data.length === 1000) return page(from + 1000);
+        return all;
+      });
+    }
+    return page(0);
+  }
 
-// ── QUOTIDIEN ──
-function renderQuotidien() {
-  var site = getSite(), cat = getCat(), week = currentWeek;
-  $('weekLabel').textContent = 'S' + week;
+  function loadAvailableYears() {
+    // Utilise la fonction RPC pour avoir toutes les années
+    sb.rpc('get_distinct_years').then(function(r) {
+      var years = [];
+      if (!r.error && r.data) {
+        years = r.data.map(function(row) { return row.year; }).filter(Boolean).sort(function(a,b){return b-a;});
+      }
+      // Fallback si RPC échoue
+      if (years.length === 0) {
+        var cur = new Date().getFullYear();
+        years = [cur, cur - 1];
+      }
+      var sel = el('yearFilter');
+      var prev = parseInt(sel.value) || currentYear;
+      sel.innerHTML = '';
+      years.forEach(function(y) {
+        var o = document.createElement('option');
+        o.value = y; o.textContent = y;
+        if (y === prev) o.selected = true;
+        sel.appendChild(o);
+      });
+      currentYear = parseInt(sel.value);
+      loadData();
+    });
+  }
 
-  var DAYS = ['lundi','mardi','mercredi','jeudi','vendredi','samedi','dimanche'];
-  var DAYS_FR = ['Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi','Dimanche'];
-  var dIdx = {};
-  DAYS.forEach(function(d,i) { dIdx[d] = i; });
+  function loadData() {
+    var year = getYear();
+    currentYear = year;
+    el('mainContent').innerHTML = '<div class="loading"><div class="spinner"></div> Chargement ' + year + '...</div>';
+    Promise.all([
+      fetchTable('dispatched', year),
+      fetchTable('delivered', year),
+      fetchTable('consumed', year),
+      fetchTable('stock_12h30', year),
+      fetchTable('stock_6h', year),
+      fetchTable('delivery_proofs', year)
+    ]).then(function(res) {
+      allDisp = res[0]; allDeliv = res[1]; allConso = res[2];
+      allS12 = res[3]; allS6 = res[4]; allProofs = res[5];
 
-  function fw(rows, sf) {
+      var siteSet = {};
+      allDisp.forEach(function(r) { if (r.site) siteSet[r.site] = 1; });
+      allDeliv.forEach(function(r) { if (r.site_name) siteSet[r.site_name] = 1; });
+      var sites = Object.keys(siteSet).sort();
+      var sel = el('siteFilter');
+      var prev = sel.value;
+      sel.innerHTML = '<option value="all">Emplacement (tous)</option>';
+      sites.forEach(function(s) {
+        var o = document.createElement('option');
+        o.value = s; o.textContent = s;
+        if (s === prev) o.selected = true;
+        sel.appendChild(o);
+      });
+
+      var wSet = {};
+      allDisp.forEach(function(r) { if (r.week_number) wSet[r.week_number] = 1; });
+      allDeliv.forEach(function(r) { if (r.week_number) wSet[r.week_number] = 1; });
+      allConso.forEach(function(r) { if (r.week_number) wSet[r.week_number] = 1; });
+      availableWeeks = Object.keys(wSet).map(Number).sort(function(a,b){return a-b;});
+      currentWeek = availableWeeks[availableWeeks.length - 1] || 1;
+
+      var total = allDisp.length + allDeliv.length + allConso.length;
+      el('syncInfo').textContent = total.toLocaleString('fr-FR') + ' lignes · ' + new Date().toLocaleDateString('fr-FR');
+      renderCurrentView();
+    }).catch(function(e) {
+      el('mainContent').innerHTML = '<div class="error-box">❌ ' + e.message + '</div>';
+    });
+  }
+
+  // ── FILTER ──
+  function filt(rows, site, cat, sf) {
     sf = sf || 'site';
     return rows.filter(function(r) {
       var sOk = site === 'all' || r[sf] === site;
       var cOk = cat === 'EPD' ? r.epd === 'EPD' : r.category2 === cat;
-      return sOk && cOk && r.week_number === week;
+      return sOk && cOk;
     });
   }
 
-  var disp = fw(allDisp), deliv = fw(allDeliv,'site_name'), conso = fw(allConso);
-  var s12 = fw(allS12), s6 = fw(allS6);
-  var preuves = allProofs.filter(function(r) { return (site==='all'||r.site===site) && r.week_number===week; });
+  // ── HEBDO ──
+  function renderHebdo() {
+    var site = getSite(), cat = getCat();
+    var disp = filt(allDisp, site, cat);
+    var deliv = filt(allDeliv, site, cat, 'site_name');
+    var conso = filt(allConso, site, cat);
+    var s12 = filt(allS12, site, cat);
+    var s6 = filt(allS6, site, cat);
 
-  // Dates réelles par jour
-  var dateByDay = Array(7).fill(null);
-  [].concat(disp,deliv,conso).forEach(function(r) {
-    var dn = (r.day_name||'').toLowerCase();
-    var i = dIdx[dn];
-    var ds = r.date || r.delivery_date;
-    if (i !== undefined && ds && !dateByDay[i]) dateByDay[i] = ds;
-  });
+    var wSet = {};
+    disp.forEach(function(r){if(r.week_number)wSet[r.week_number]=1;});
+    deliv.forEach(function(r){if(r.week_number)wSet[r.week_number]=1;});
+    conso.forEach(function(r){if(r.week_number)wSet[r.week_number]=1;});
+    var weeks = Object.keys(wSet).map(Number).sort(function(a,b){return a-b;});
+    if (!weeks.length) { el('mainContent').innerHTML='<div class="empty"><div class="ei">🔍</div>Aucune donnée</div>'; return; }
 
-  function aggD(rows,qF,vF) { var m=Array(7).fill(null).map(function(){return{qty:0,val:0};}); rows.forEach(function(r){var i=dIdx[(r.day_name||'').toLowerCase()];if(i===undefined)return;m[i].qty+=(Number(r[qF])||0);m[i].val+=(Number(r[vF])||0);}); return m; }
-  function avgD(rows) { var t=Array(7).fill(0),c=Array(7).fill(0); rows.forEach(function(r){var i=dIdx[(r.day_name||'').toLowerCase()];if(i===undefined)return;t[i]+=(Number(r.quantity)||0);c[i]++;}); return t.map(function(v,i){return c[i]>0?v/c[i]:0;}); }
+    function agg(rows,qF,vF){var m={};rows.forEach(function(r){var w=r.week_number;if(!w)return;if(!m[w])m[w]={qty:0,val:0};m[w].qty+=(Number(r[qF])||0);m[w].val+=(Number(r[vF])||0);});return m;}
+    function aggP(rows,qF){var m={};rows.forEach(function(r){var w=r.week_number;if(!w)return;if(!m[w])m[w]={total:0,Poisson:0,Viande:0,'Végétarien':0,Volaille:0};var q=Number(r[qF])||0;if(r.protein_type&&m[w][r.protein_type]!==undefined){m[w][r.protein_type]+=q;m[w].total+=q;}});return m;}
+    function avgS(rows){var s={},c={};rows.forEach(function(r){var w=r.week_number;if(!w)return;if(!s[w]){s[w]=0;c[w]=0;}s[w]+=(Number(r.quantity)||0);c[w]++;});var a={};Object.keys(s).forEach(function(w){a[w]=c[w]>0?s[w]/c[w]:0;});return a;}
 
-  var dA=aggD(disp,'quantity','value'), lA=aggD(deliv,'quantity_detected','value'), cA=aggD(conso,'quantity','value');
-  var a12=avgD(s12), a6=avgD(s6);
+    var dA=agg(disp,'quantity','value'),lA=agg(deliv,'quantity_detected','value'),cA=agg(conso,'quantity','value');
+    var lP=aggP(deliv,'quantity_detected'),cP=aggP(conso,'quantity');
+    var a12=avgS(s12),a6=avgS(s6);
 
-  var tD=dA.reduce(function(s,r){return s+r.qty;},0);
-  var tL=lA.reduce(function(s,r){return s+r.qty;},0);
-  var tC=cA.reduce(function(s,r){return s+r.qty;},0);
-  var gN=tL-tC, gV=lA.reduce(function(s,r){return s+r.val;},0)-cA.reduce(function(s,r){return s+r.val;},0);
-  var gP=tL>0?gN/tL:null;
+    var html='<div class="table-wrapper"><table><thead><tr><th>Indicateur</th>';
+    weeks.forEach(function(w){html+='<th>S'+w+'</th>';});
+    html+='</tr></thead><tbody>';
 
-  var dayHeaders = DAYS_FR.map(function(d,i) {
-    var dt = dateByDay[i];
-    if (dt) { var num = new Date(dt).getDate(); return d + ' <span style="font-family:var(--mono);font-size:10px;opacity:0.7">' + num + '</span>'; }
-    return d;
-  });
-
-  var html = '<div class="stats-row">'
-    + '<div class="stat-card"><div class="slabel">Dispatché S'+week+'</div><div class="sval">'+fmt(tD)+'</div><div class="ssub">'+fmtE(dA.reduce(function(s,r){return s+r.val;},0))+'</div></div>'
-    + '<div class="stat-card"><div class="slabel">Livré S'+week+'</div><div class="sval">'+fmt(tL)+'</div><div class="ssub">'+fmtE(lA.reduce(function(s,r){return s+r.val;},0))+'</div></div>'
-    + '<div class="stat-card"><div class="slabel">Consommé S'+week+'</div><div class="sval">'+fmt(tC)+'</div><div class="ssub">'+fmtE(cA.reduce(function(s,r){return s+r.val;},0))+'</div></div>'
-    + '<div class="stat-card hl"><div class="slabel">Gâchis S'+week+'</div><div class="sval">'+fmtP(gP)+'</div><div class="ssub">'+fmtE(gV)+' · '+fmt(gN)+' unités</div></div>'
-    + '</div>'
-    + '<div class="table-wrapper"><table><thead><tr><th>Indicateur</th>';
-  dayHeaders.forEach(function(d) { html += '<th>' + d + '</th>'; });
-  html += '<th class="tcol">Total</th></tr></thead><tbody>';
-
-  function rowD(label,vals,tot,isS,isG) {
-    var cls = isS?'rs':isG?'rg':'';
-    html += '<tr class="'+cls+'"><td>'+label+'</td>';
-    vals.forEach(function(v) { html += '<td>'+v+'</td>'; });
-    html += '<td class="tcol"><strong>'+tot+'</strong></td></tr>';
-  }
-
-  rowD('Dispatché',Array(7).fill(''),'',true);
-  rowD('Dispatché (unités)',dA.map(function(r){return fmt(r.qty);}),fmt(tD));
-  rowD('Valo PAHT€',dA.map(function(r){return fmtE(r.val);}),fmtE(dA.reduce(function(s,r){return s+r.val;},0)));
-  rowD('Livré',Array(7).fill(''),'',true);
-  rowD('Livré (unités)',lA.map(function(r){return fmt(r.qty);}),fmt(tL));
-  rowD('Valo PAHT€',lA.map(function(r){return fmtE(r.val);}),fmtE(lA.reduce(function(s,r){return s+r.val;},0)));
-  rowD('% vs dispatch',lA.map(function(r,i){var p=dA[i].qty>0?r.qty/dA[i].qty:null;return fmtP(p);}),fmtP(tD>0?tL/tD:null));
-  rowD('Consommé',Array(7).fill(''),'',true);
-  rowD('Consommé (unités)',cA.map(function(r){return fmt(r.qty);}),fmt(tC));
-  rowD('Valo PAHT€',cA.map(function(r){return fmtE(r.val);}),fmtE(cA.reduce(function(s,r){return s+r.val;},0)));
-  rowD('Stock',Array(7).fill(''),'',true);
-  rowD('Stock début de shift (6h)',a6.map(function(v){return fmt(v,1);}),fmt(a6.reduce(function(a,v){return a+v;},0)/7,1));
-  rowD('Stock moy / réf 12h30',a12.map(function(v){return fmt(v,1);}),fmt(a12.reduce(function(a,v){return a+v;},0)/7,1));
-  rowD('Gâchis',Array(7).fill(''),'',true);
-  rowD('Gâchis #',Array(7).fill(''),fmt(gN),false,true);
-  rowD('Valo gâchis €',Array(7).fill(''),fmtE(gV),false,true);
-  rowD('Gâchis %',Array(7).fill(''),'<span class="'+pC(gP)+'">'+fmtP(gP)+'</span>',false,true);
-
-  html += '</tbody></table></div>';
-
-  if (preuves.length > 0) {
-    html += '<div class="section-title">📸 Preuves de livraison & préparation</div><div class="proofs-grid">';
-    preuves.sort(function(a,b){return new Date(a.date)-new Date(b.date);}).forEach(function(r) {
-      var prep = r.preparation_url ? '<img class="pimg" src="'+r.preparation_url+'" loading="lazy" onclick="window.open(\''+r.preparation_url+'\',\'_blank\')" onerror="this.outerHTML=\'<div class=pmiss>📷</div>\'">' : '<div class="pmiss">📷</div>';
-      var livr = r.delivery_url ? '<img class="pimg" src="'+r.delivery_url+'" loading="lazy" onclick="window.open(\''+r.delivery_url+'\',\'_blank\')" onerror="this.outerHTML=\'<div class=pmiss>🚚</div>\'">' : '<div class="pmiss">🚚</div>';
-      html += '<div class="proof-card"><div class="proof-header"><span class="proof-site">'+(r.site||'—')+'</span><span class="proof-date">'+frDate(r.date)+'</span></div><div class="proof-imgs"><div><div class="pilbl">Préparation</div>'+prep+'</div><div><div class="pilbl">Livraison</div>'+livr+'</div></div></div>';
+    function row(label,fn,isS,isG){
+      var cls=isS?'rs':isG?'rg':'';
+      html+='<tr class="'+cls+'"><td>'+label+'</td>';
+      weeks.forEach(function(w){html+='<td>'+fn(w)+'</td>';});
+      html+='</tr>';
+    }
+    row('Dispatché',function(){return'';},true);
+    row('Dispatché (unités)',function(w){return fmt(dA[w]&&dA[w].qty);});
+    row('Valo PAHT€',function(w){return fmtE(dA[w]&&dA[w].val);});
+    row('Livré',function(){return'';},true);
+    row('Livré (unités)',function(w){return fmt(lA[w]&&lA[w].qty);});
+    row('Valo PAHT€',function(w){return fmtE(lA[w]&&lA[w].val);});
+    row('% vs dispatch',function(w){var p=dA[w]&&dA[w].qty>0?(lA[w]?lA[w].qty:0)/dA[w].qty:null;return fmtP(p);});
+    ['Poisson','Viande','Végétarien','Volaille'].forEach(function(p){
+      row(p+' %',function(w){var d=lP[w];if(!d||d.total===0)return'—';return fmtP((d[p]||0)/d.total);});
     });
-    html += '</div>';
-  } else {
-    html += '<div class="section-title">📸 Preuves de livraison & préparation</div><div class="empty" style="padding:30px"><div class="ei">📷</div>Aucune preuve pour S'+week+'</div>';
+    row('Consommé',function(){return'';},true);
+    row('Consommé (unités)',function(w){return fmt(cA[w]&&cA[w].qty);});
+    row('Valo PAHT€',function(w){return fmtE(cA[w]&&cA[w].val);});
+    ['Poisson','Viande','Végétarien','Volaille'].forEach(function(p){
+      row(p+' %',function(w){var d=cP[w];if(!d||d.total===0)return'—';return fmtP((d[p]||0)/d.total);});
+    });
+    row('Stock',function(){return'';},true);
+    row('Stock début de shift (6h)',function(w){return fmt(a6[w],1);});
+    row('Stock moy / réf 12h30',function(w){return fmt(a12[w],1);});
+    row('Gâchis',function(){return'';},true);
+    row('Gâchis #',function(w){return fmt((lA[w]?lA[w].qty:0)-(cA[w]?cA[w].qty:0));},false,true);
+    row('Valo gâchis €',function(w){return fmtE((lA[w]?lA[w].val:0)-(cA[w]?cA[w].val:0));},false,true);
+    row('Gâchis %',function(w){
+      var g=lA[w]&&lA[w].qty>0?(lA[w].qty-(cA[w]?cA[w].qty:0))/lA[w].qty:null;
+      return '<span class="'+pC(g)+'">'+fmtP(g)+'</span>';
+    },false,true);
+    html+='</tbody></table></div>';
+    el('mainContent').innerHTML=html;
   }
-  $('mainContent').innerHTML = html;
-}
 
-// ── NAV ──
-function switchTab(tab) {
-  currentTab = tab;
-  $('tabHebdo').classList.toggle('active', tab === 'hebdo');
-  $('tabQuotidien').classList.toggle('active', tab === 'quotidien');
-  $('weekFilterGroup').classList.toggle('hidden', tab === 'hebdo');
-  renderCurrentView();
-}
-function changeWeek(d) {
-  var i = availableWeeks.indexOf(currentWeek);
-  var ni = i + d;
-  if (ni >= 0 && ni < availableWeeks.length) currentWeek = availableWeeks[ni];
-  renderQuotidien();
-}
-function renderCurrentView() {
-  if (currentTab === 'hebdo') renderHebdo();
-  else renderQuotidien();
-}
+  // ── QUOTIDIEN ──
+  function renderQuotidien() {
+    var site=getSite(),cat=getCat(),week=currentWeek;
+    el('weekLabel').textContent='S'+week;
+    var DAYS=['lundi','mardi','mercredi','jeudi','vendredi','samedi','dimanche'];
+    var DAYS_FR=['Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi','Dimanche'];
+    var dIdx={};
+    DAYS.forEach(function(d,i){dIdx[d]=i;});
+
+    function fw(rows,sf){sf=sf||'site';return rows.filter(function(r){var sOk=site==='all'||r[sf]===site;var cOk=cat==='EPD'?r.epd==='EPD':r.category2===cat;return sOk&&cOk&&r.week_number===week;});}
+
+    var disp=fw(allDisp),deliv=fw(allDeliv,'site_name'),conso=fw(allConso);
+    var s12=fw(allS12),s6=fw(allS6);
+    var preuves=allProofs.filter(function(r){return(site==='all'||r.site===site)&&r.week_number===week;});
+
+    // Calcul des dates réelles par jour à partir du numéro de semaine
+    // Trouver l'année et le lundi de la semaine
+    function getMondayOfWeek(y, w) {
+      var jan4 = new Date(y, 0, 4);
+      var dayOfWeek = jan4.getDay() || 7;
+      var monday = new Date(jan4);
+      monday.setDate(jan4.getDate() - dayOfWeek + 1 + (w - 1) * 7);
+      return monday;
+    }
+    var monday = getMondayOfWeek(currentYear, week);
+    var dateByDay = DAYS_FR.map(function(d, i) {
+      var dt = new Date(monday);
+      dt.setDate(monday.getDate() + i);
+      return dt.getDate();
+    });
+
+    function aggD(rows,qF,vF){var m=[];for(var i=0;i<7;i++)m.push({qty:0,val:0});rows.forEach(function(r){var i=dIdx[(r.day_name||'').toLowerCase()];if(i===undefined)return;m[i].qty+=(Number(r[qF])||0);m[i].val+=(Number(r[vF])||0);});return m;}
+    function avgD(rows){var t=[0,0,0,0,0,0,0],c=[0,0,0,0,0,0,0];rows.forEach(function(r){var i=dIdx[(r.day_name||'').toLowerCase()];if(i===undefined)return;t[i]+=(Number(r.quantity)||0);c[i]++;});return t.map(function(v,i){return c[i]>0?v/c[i]:0;});}
+
+    var dA=aggD(disp,'quantity','value'),lA=aggD(deliv,'quantity_detected','value'),cA=aggD(conso,'quantity','value');
+    var a12=avgD(s12),a6=avgD(s6);
+    var tD=0,tL=0,tC=0,tDv=0,tLv=0,tCv=0;
+    dA.forEach(function(r){tD+=r.qty;tDv+=r.val;});
+    lA.forEach(function(r){tL+=r.qty;tLv+=r.val;});
+    cA.forEach(function(r){tC+=r.qty;tCv+=r.val;});
+    var gN=tL-tC,gV=tLv-tCv,gP=tL>0?gN/tL:null;
+
+    var dayHeaders=DAYS_FR.map(function(d,i){return d+' <span style="font-family:var(--mono);font-size:10px;opacity:0.7">'+dateByDay[i]+'</span>';});
+
+    var html='<div class="stats-row">'
+      +'<div class="stat-card"><div class="slabel">Dispatché S'+week+'</div><div class="sval">'+fmt(tD)+'</div><div class="ssub">'+fmtE(tDv)+'</div></div>'
+      +'<div class="stat-card"><div class="slabel">Livré S'+week+'</div><div class="sval">'+fmt(tL)+'</div><div class="ssub">'+fmtE(tLv)+'</div></div>'
+      +'<div class="stat-card"><div class="slabel">Consommé S'+week+'</div><div class="sval">'+fmt(tC)+'</div><div class="ssub">'+fmtE(tCv)+'</div></div>'
+      +'<div class="stat-card hl"><div class="slabel">Gâchis S'+week+'</div><div class="sval">'+fmtP(gP)+'</div><div class="ssub">'+fmtE(gV)+' · '+fmt(gN)+' unités</div></div>'
+      +'</div>'
+      +'<div class="table-wrapper"><table><thead><tr><th>Indicateur</th>';
+    dayHeaders.forEach(function(d){html+='<th>'+d+'</th>';});
+    html+='<th class="tcol">Total</th></tr></thead><tbody>';
+
+    function rowD(label,vals,tot,isS,isG){
+      var cls=isS?'rs':isG?'rg':'';
+      html+='<tr class="'+cls+'"><td>'+label+'</td>';
+      vals.forEach(function(v){html+='<td>'+v+'</td>';});
+      html+='<td class="tcol"><strong>'+tot+'</strong></td></tr>';
+    }
+
+    rowD('Dispatché',Array(7).fill(''),'',true);
+    rowD('Dispatché (unités)',dA.map(function(r){return fmt(r.qty);}),fmt(tD));
+    rowD('Valo PAHT€',dA.map(function(r){return fmtE(r.val);}),fmtE(tDv));
+    rowD('Livré',Array(7).fill(''),'',true);
+    rowD('Livré (unités)',lA.map(function(r){return fmt(r.qty);}),fmt(tL));
+    rowD('Valo PAHT€',lA.map(function(r){return fmtE(r.val);}),fmtE(tLv));
+    rowD('% vs dispatch',lA.map(function(r,i){var p=dA[i].qty>0?r.qty/dA[i].qty:null;return fmtP(p);}),fmtP(tD>0?tL/tD:null));
+    rowD('Consommé',Array(7).fill(''),'',true);
+    rowD('Consommé (unités)',cA.map(function(r){return fmt(r.qty);}),fmt(tC));
+    rowD('Valo PAHT€',cA.map(function(r){return fmtE(r.val);}),fmtE(tCv));
+    rowD('Stock',Array(7).fill(''),'',true);
+    rowD('Stock début de shift (6h)',a6.map(function(v){return fmt(v,1);}),fmt(a6.reduce(function(s,v){return s+v;},0)/7,1));
+    rowD('Stock moy / réf 12h30',a12.map(function(v){return fmt(v,1);}),fmt(a12.reduce(function(s,v){return s+v;},0)/7,1));
+    rowD('Gâchis',Array(7).fill(''),'',true);
+    rowD('Gâchis #',Array(7).fill(''),fmt(gN),false,true);
+    rowD('Valo gâchis €',Array(7).fill(''),fmtE(gV),false,true);
+    rowD('Gâchis %',Array(7).fill(''),'<span class="'+pC(gP)+'">'+fmtP(gP)+'</span>',false,true);
+    html+='</tbody></table></div>';
+
+    if (preuves.length > 0) {
+      html+='<div class="section-title">📸 Preuves de livraison & préparation</div><div class="proofs-grid">';
+      preuves.sort(function(a,b){return new Date(a.date)-new Date(b.date);}).forEach(function(r){
+        var prep=r.preparation_url?'<img class="pimg" src="'+r.preparation_url+'" loading="lazy" onclick="window.open(this.src,\'_blank\')" onerror="this.outerHTML=\'<div class=pmiss>📷</div>\'">':'<div class="pmiss">📷</div>';
+        var livr=r.delivery_url?'<img class="pimg" src="'+r.delivery_url+'" loading="lazy" onclick="window.open(this.src,\'_blank\')" onerror="this.outerHTML=\'<div class=pmiss>🚚</div>\'">':'<div class="pmiss">🚚</div>';
+        html+='<div class="proof-card"><div class="proof-header"><span class="proof-site">'+(r.site||'—')+'</span><span class="proof-date">'+frDate(r.date)+'</span></div><div class="proof-imgs"><div><div class="pilbl">Préparation</div>'+prep+'</div><div><div class="pilbl">Livraison</div>'+livr+'</div></div></div>';
+      });
+      html+='</div>';
+    } else {
+      html+='<div class="section-title">📸 Preuves de livraison</div><div class="empty" style="padding:30px"><div class="ei">📷</div>Aucune preuve pour S'+week+'</div>';
+    }
+    el('mainContent').innerHTML=html;
+  }
+
+  function switchTab(tab){
+    currentTab=tab;
+    el('tabHebdo').classList.toggle('active',tab==='hebdo');
+    el('tabQuotidien').classList.toggle('active',tab==='quotidien');
+    el('weekFilterGroup').classList.toggle('hidden',tab==='hebdo');
+    renderCurrentView();
+  }
+  function changeWeek(d){
+    var i=availableWeeks.indexOf(currentWeek);
+    var ni=i+d;
+    if(ni>=0&&ni<availableWeeks.length)currentWeek=availableWeeks[ni];
+    renderQuotidien();
+  }
+  function applyFilters(){renderCurrentView();}
+  function renderCurrentView(){if(currentTab==='hebdo')renderHebdo();else renderQuotidien();}
 
 })();
 </script>
