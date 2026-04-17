@@ -177,7 +177,7 @@ def fetch_question(token, question_id, params):
     try:
         data = r.json()
         if isinstance(data, list): return data
-print(f"    ❌ Réponse inattendue: {str(data)[:200]}")
+        print(f"    ❌ Réponse inattendue: {str(data)[:600]}")
         return []
     except json.JSONDecodeError:
         try:
@@ -197,19 +197,18 @@ def p_range(tag, s, e):
 
 def p_stock(heure, start, end):
     """
-    Question 1682 — DATE_RANGE.start et DATE_RANGE.end sont des
-    variables SQL natives utilisées dans generate_series()
-    Le bon type est "date" avec target "variable" (pas "dimension")
+    Question 1682 — DATE_RANGE.start et DATE_RANGE.end
+    Type dans Metabase: Date → target = dimension (field filter de type date)
     """
     return [
         {
-            "type": "date",
-            "target": ["variable", ["template-tag", "DATE_RANGE.start"]],
+            "type": "date/single",
+            "target": ["dimension", ["template-tag", "DATE_RANGE.start"]],
             "value": str(start)
         },
         {
-            "type": "date",
-            "target": ["variable", ["template-tag", "DATE_RANGE.end"]],
+            "type": "date/single",
+            "target": ["dimension", ["template-tag", "DATE_RANGE.end"]],
             "value": str(end)
         },
         {
