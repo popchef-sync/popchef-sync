@@ -189,6 +189,68 @@ def fetch_question(token, question_id, params):
         except: pass
         return []
 
+def fetch_stock(token, question_id, heure, start, end):
+    """
+    Contourne le bug des parametres avec point (DATE_RANGE.start/.end)
+    en substituant directement les valeurs dans le SQL.
+    """
+    headers = {"X-Metabase-Session": token, "Content-Type": "application/json"}
+
+    # Recuperer le SQL de la question
+    r = requests.get(f"{METABASE_URL}/api/card/{question_id}", headers=headers, timeout=30)
+    if r.status_code != 200:
+        print(f"    Erreur recup question {question_id}: {r.status_code}")
+        return []
+
+    card = r.json()
+    sql = card.get("dataset_query", {}).get("native", {}).get("query", "")
+    database_id = card.get("database_id", 2)
+
+    if not sql:
+        print(f"    SQL non trouve dans la question {question_id}")
+        return []
+
+    # Substitution directe des variables
+    sql = sql.replace("{{ DATE_RANGE.start }}", f"'{start}'::date")
+    sql = sql.replace("{{ DATE_RANGE.end }}", f"'{end}'::date")
+    sql = sql.replace("{{DATE_RANGE.start}}", f"'{start}'::date")
+    sql = sql.replace("{{DATE_RANGE.end}}", f"'{end}'::date")
+    sql = sql.replace("{{ HEURE }}", f"'{heure}'")
+    sql = sql.replace("{{HEURE}}", f"'{heure}'")
+    sql = sql.replace("AND {{ EMPLACEMENT }}", "AND 1=1")
+    sql = sql.replace("AND {{EMPLACEMENT}}", "AND 1=1")
+
+    # Executer via API dataset
+    payload = {
+        "database": database_id,
+        "type": "native",
+        "native": {"query": sql},
+        "parameters": []
+    }
+    r2 = requests.post(
+        f"{METABASE_URL}/api/dataset/json",
+        headers=headers,
+        json=payload,
+        timeout=300
+    )
+    if r2.status_code != 200:
+        print(f"    Erreur dataset stock: {r2.status_code} {r2.text[:300]}")
+        return []
+    try:
+        data = r2.json()
+        if isinstance(data, list): return data
+        print(f"    Reponse inattendue stock: {str(data)[:400]}")
+        return []
+    except Exception:
+        try:
+            last = r2.text.rfind('},')
+            if last > 0:
+                return json.loads(r2.text[:last + 1] + ']')
+        except Exception:
+            pass
+        return []
+
+
 # ─── PARAMÈTRES ───────────────────────────────────────────
 
 def p_range(tag, s, e):
@@ -377,7 +439,7 @@ def sync_month(token, year, month, start, end):
     # La question 1682 génère une série de dates SQL, donc limiter à 1 mois max
     if not already_imported("stock_12h30", year, month):
         try:
-            rows = fetch_question(token, 1682, p_stock("12:31", start, end))
+            rows = fetch_stock(token, 1682, "12:31", start, end)
             data = t_stock(rows, start, end)
             delete_month("stock_12h30", "timestamp", year, month)
             n = insert("stock_12h30", data)
@@ -392,7 +454,7 @@ def sync_month(token, year, month, start, end):
     # Stock 6h
     if not already_imported("stock_6h", year, month):
         try:
-            rows = fetch_question(token, 1682, p_stock("06:01", start, end))
+            rows = fetch_stock(token, 1682, "06:01", start, end)
             data = t_stock(rows, start, end)
             delete_month("stock_6h", "timestamp", year, month)
             n = insert("stock_6h", data)
