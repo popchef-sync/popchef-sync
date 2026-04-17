@@ -190,36 +190,120 @@ def fetch_question(token, question_id, params):
         return []
 
 def fetch_stock(token, question_id, heure, start, end):
+    """
+    La question 1682 est en format MLv2 (stages) dans Metabase.
+    On recupere le SQL natif via l'API interne puis on execute
+    directement avec les valeurs substituees.
+    """
     headers = {"X-Metabase-Session": token, "Content-Type": "application/json"}
-    r = requests.get(f"{METABASE_URL}/api/card/{question_id}", headers=headers, timeout=30)
-    if r.status_code != 200:
-        print(f"    Erreur recup question {question_id}: {r.status_code}")
-        return []
-    card = r.json()
-    # Debug: afficher les clés disponibles
-    print(f"    DEBUG clés card: {list(card.keys())[:10]}")
-    dataset_query = card.get("dataset_query", {})
-    print(f"    DEBUG clés dataset_query: {list(dataset_query.keys())}")
-    native = dataset_query.get("native", {})
-    print(f"    DEBUG clés native: {list(native.keys())}")
-    sql = native.get("query", "")
-    print(f"    DEBUG sql debut: {sql[:100] if sql else 'VIDE'}")
 
-    # Recuperer le SQL de la question
-    r = requests.get(f"{METABASE_URL}/api/card/{question_id}", headers=headers, timeout=30)
+    # Recuperer la carte complete avec son SQL
+    r = requests.get(
+        f"{METABASE_URL}/api/card/{question_id}",
+        headers=headers,
+        timeout=30
+    )
     if r.status_code != 200:
-        print(f"    Erreur recup question {question_id}: {r.status_code}")
+        print(f"    Erreur recup carte: {r.status_code}")
         return []
 
     card = r.json()
-    sql = card.get("dataset_query", {}).get("native", {}).get("query", "")
-    database_id = card.get("database_id", 2)
+    dq = card.get("dataset_query", {})
+
+    # Chercher le SQL dans le format MLv2 (stages)
+    sql = ""
+    stages = dq.get("stages", [])
+    for stage in stages:
+        q = stage.get("native", {}).get("query", "")
+        if q:
+            sql = q
+            break
+
+    # Fallback format classique
+    if not sql:
+        sql = dq.get("native", {}).get("query", "")
+
+    database_id = dq.get("database", 2)
 
     if not sql:
-        print(f"    SQL non trouve dans la question {question_id}")
+        # Derniere tentative: endpoint /api/card/{id}/query/json sans parametres
+        # puis on recupere le SQL depuis les metadonnees
+        print(f"    SQL non trouve, tentative via dataset...")
+        # Utiliser l'endpoint dataset avec parametres au format MLv2
+        payload = {
+            "database": database_id,
+            "type": "native",
+            "native": {
+                "query": f"""
+WITH date_range AS (
+    SELECT generate_series(
+        '{start}'::date,
+        '{end}'::date,
+        interval '1 day'
+    )::date AS jour
+),
+snapshots AS (
+    SELECT
+        date_range.jour,
+        (date_range.jour::timestamp + make_interval(
+            hours => split_part('{heure}', ':', 1)::int,
+            mins  => split_part('{heure}', ':', 2)::int
+        )) AS instant_T
+    FROM date_range
+)
+SELECT
+    canteen_locations."name" AS "Nom de l'emplacement",
+    CASE
+        WHEN products."subCategory" IS NOT NULL THEN products."subCategory"
+        ELSE products."category"
+    END AS "Catégorie du produit",
+    products."name" AS "Nom du produit",
+    snapshots.instant_T,
+    COUNT(*) AS "nombre de produit",
+    openit_fridge_products."expiresAt" AS dlc
+FROM snapshots
+LEFT JOIN openit_fridge_products
+    ON openit_fridge_products."inputDate" <= snapshots.instant_T
+    AND (openit_fridge_products."outputDate" > snapshots.instant_T
+         OR openit_fridge_products."outputDate" IS NULL)
+LEFT JOIN products ON products.id = openit_fridge_products."productId"
+LEFT JOIN canteen_fridges ON canteen_fridges.id = openit_fridge_products."canteenFridgeId"
+LEFT JOIN canteen_locations ON canteen_locations.id = canteen_fridges."canteenLocationId"
+WHERE canteen_fridges."isActive" = true
+GROUP BY
+    snapshots.instant_T,
+    canteen_locations."name",
+    "Catégorie du produit",
+    products."name",
+    dlc
+ORDER BY
+    snapshots.instant_T ASC,
+    canteen_locations."name",
+    "Catégorie du produit",
+    products."name",
+    dlc
+"""
+            },
+            "parameters": []
+        }
+        r2 = requests.post(
+            f"{METABASE_URL}/api/dataset/json",
+            headers=headers,
+            json=payload,
+            timeout=300
+        )
+        if r2.status_code == 200:
+            try:
+                data = r2.json()
+                if isinstance(data, list):
+                    print(f"    OK via SQL direct: {len(data)} lignes")
+                    return data
+            except Exception:
+                pass
+        print(f"    Echec SQL direct: {r2.status_code} {r2.text[:200]}")
         return []
 
-    # Substitution directe des variables
+    # Substituer les variables dans le SQL recupere
     sql = sql.replace("{{ DATE_RANGE.start }}", f"'{start}'::date")
     sql = sql.replace("{{ DATE_RANGE.end }}", f"'{end}'::date")
     sql = sql.replace("{{DATE_RANGE.start}}", f"'{start}'::date")
@@ -229,34 +313,28 @@ def fetch_stock(token, question_id, heure, start, end):
     sql = sql.replace("AND {{ EMPLACEMENT }}", "AND 1=1")
     sql = sql.replace("AND {{EMPLACEMENT}}", "AND 1=1")
 
-    # Executer via API dataset
     payload = {
         "database": database_id,
         "type": "native",
         "native": {"query": sql},
         "parameters": []
     }
-    r2 = requests.post(
+    r3 = requests.post(
         f"{METABASE_URL}/api/dataset/json",
         headers=headers,
         json=payload,
         timeout=300
     )
-    if r2.status_code != 200:
-        print(f"    Erreur dataset stock: {r2.status_code} {r2.text[:300]}")
+    if r3.status_code != 200:
+        print(f"    Erreur dataset: {r3.status_code} {r3.text[:200]}")
         return []
     try:
-        data = r2.json()
-        if isinstance(data, list): return data
-        print(f"    Reponse inattendue stock: {str(data)[:400]}")
+        data = r3.json()
+        if isinstance(data, list):
+            return data
+        print(f"    Reponse inattendue: {str(data)[:300]}")
         return []
     except Exception:
-        try:
-            last = r2.text.rfind('},')
-            if last > 0:
-                return json.loads(r2.text[:last + 1] + ']')
-        except Exception:
-            pass
         return []
 
 
