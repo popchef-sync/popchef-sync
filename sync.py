@@ -190,11 +190,20 @@ def fetch_question(token, question_id, params):
         return []
 
 def fetch_stock(token, question_id, heure, start, end):
-    """
-    Contourne le bug des parametres avec point (DATE_RANGE.start/.end)
-    en substituant directement les valeurs dans le SQL.
-    """
     headers = {"X-Metabase-Session": token, "Content-Type": "application/json"}
+    r = requests.get(f"{METABASE_URL}/api/card/{question_id}", headers=headers, timeout=30)
+    if r.status_code != 200:
+        print(f"    Erreur recup question {question_id}: {r.status_code}")
+        return []
+    card = r.json()
+    # Debug: afficher les clés disponibles
+    print(f"    DEBUG clés card: {list(card.keys())[:10]}")
+    dataset_query = card.get("dataset_query", {})
+    print(f"    DEBUG clés dataset_query: {list(dataset_query.keys())}")
+    native = dataset_query.get("native", {})
+    print(f"    DEBUG clés native: {list(native.keys())}")
+    sql = native.get("query", "")
+    print(f"    DEBUG sql debut: {sql[:100] if sql else 'VIDE'}")
 
     # Recuperer le SQL de la question
     r = requests.get(f"{METABASE_URL}/api/card/{question_id}", headers=headers, timeout=30)
