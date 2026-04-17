@@ -177,7 +177,7 @@ def fetch_question(token, question_id, params):
     try:
         data = r.json()
         if isinstance(data, list): return data
-        print(f"    ❌ Réponse inattendue: {str(data)[:200]}")
+print(f"    ❌ Réponse inattendue: {str(data)[:800]}")
         return []
     except json.JSONDecodeError:
         try:
