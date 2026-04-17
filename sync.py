@@ -197,15 +197,26 @@ def p_range(tag, s, e):
 
 def p_stock(heure, start, end):
     """
-    Question 1682 — stock frigo openit
-    DATE_RANGE.start et DATE_RANGE.end = date/single (calendrier)
-    HEURE = category (texte)
-    EMPLACEMENT = Field Filter optionnel — NE PAS l'inclure = tous les emplacements
+    Question 1682 — DATE_RANGE.start et DATE_RANGE.end sont des
+    variables SQL natives utilisées dans generate_series()
+    Le bon type est "date" avec target "variable" (pas "dimension")
     """
     return [
-        {"type": "date/single", "target": ["dimension", ["template-tag", "DATE_RANGE.start"]], "value": str(start)},
-        {"type": "date/single", "target": ["dimension", ["template-tag", "DATE_RANGE.end"]], "value": str(end)},
-        {"type": "category", "target": ["variable", ["template-tag", "HEURE"]], "value": heure},
+        {
+            "type": "date",
+            "target": ["variable", ["template-tag", "DATE_RANGE.start"]],
+            "value": str(start)
+        },
+        {
+            "type": "date",
+            "target": ["variable", ["template-tag", "DATE_RANGE.end"]],
+            "value": str(end)
+        },
+        {
+            "type": "category",
+            "target": ["variable", ["template-tag", "HEURE"]],
+            "value": heure
+        }
     ]
 
 # ─── TRANSFORMATIONS ──────────────────────────────────────
