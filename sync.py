@@ -37,6 +37,16 @@ def month_chunks(start, end):
 def parse_french_date(s):
     if not s: return None
     s = str(s).strip().strip('"')
+    # Format ISO avec timezone: 2026-03-01T12:31:00+01:00 ou 2026-03-01T12:31:00+00
+    m = re.match(r"(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})", s)
+    if m:
+        year, month, day, hour, minute, second = m.groups()
+        return datetime(int(year), int(month), int(day), int(hour), int(minute), int(second))
+    # Format ISO simple: 2026-03-01 12:31:00+00
+    m = re.match(r"(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})", s)
+    if m:
+        year, month, day, hour, minute, second = m.groups()
+        return datetime(int(year), int(month), int(day), int(hour), int(minute), int(second))
     m = re.match(r"(\d+)\s+(\w+),\s*(\d{4}),?\s*(\d{2}):(\d{2})", s)
     if m:
         day, ms, year, hour, minute = m.groups()
@@ -305,7 +315,6 @@ def fetch_stock(token, heure, start, end):
             if isinstance(data, list) and data:
                 if isinstance(data[0], dict):
                     # Afficher les cles pour debug
-                    print("    Cles retournees: " + str(list(data[0].keys())))
                     return data
                 elif isinstance(data[0], list):
                     # Liste de listes - 1ere ligne = headers
