@@ -298,24 +298,42 @@ ORDER BY
             timeout=300
         )
         print(f"    SQL direct status: {r2.status_code}")
+        print(f"    SQL direct status: {r2.status_code}")
         if r2.status_code == 200:
             try:
                 data = r2.json()
-                if isinstance(data, list):
-                    print(f"    OK via SQL direct: {len(data)} lignes")
-                    return data
-                elif isinstance(data, str):
-                    # Parfois Metabase retourne du JSON en string
-                    import json as json_mod
-                    data2 = json_mod.loads(data)
-                    if isinstance(data2, list):
-                        return data2
-                print(f"    Reponse type: {type(data)}, debut: {str(data)[:200]}")
+                print(f"    Reponse type: {type(data).__name__}, debut: {str(data)[:300]}")
+                # /api/dataset/json retourne une liste de dicts normalement
+                if isinstance(data, list) and len(data) > 0:
+                    # Verifier si c'est une liste de dicts ou de listes
+                    first = data[0]
+                    if isinstance(first, dict):
+                        print(f"    OK: {len(data)} lignes (dicts)")
+                        return data
+                    elif isinstance(first, list):
+                        # Format liste de listes - le premier element est les headers
+                        print(f"    Format liste de listes, conversion...")
+                        headers = data[0]
+                        rows_out = []
+                        for row in data[1:]:
+                            rows_out.append(dict(zip(headers, row)))
+                        print(f"    OK: {len(rows_out)} lignes converties")
+                        return rows_out
+                elif isinstance(data, dict):
+                    # Peut etre format {data: {rows: [...], cols: [...]}}
+                    rows = data.get("data", {}).get("rows", [])
+                    cols = data.get("data", {}).get("cols", [])
+                    if rows and cols:
+                        col_names = [c.get("display_name", c.get("name", f"col{i}")) for i,c in enumerate(cols)]
+                        rows_out = [dict(zip(col_names, row)) for row in rows]
+                        print(f"    OK via data.rows: {len(rows_out)} lignes")
+                        return rows_out
+                print(f"    Reponse inattendue")
             except Exception as ex:
-                print(f"    Exception parsing: {ex}")
-                print(f"    Texte brut: {r2.text[:300]}")
+                print(f"    Exception: {ex}")
+                print(f"    Texte brut: {r2.text[:400]}")
         else:
-            print(f"    Echec SQL direct: {r2.status_code} {r2.text[:300]}")
+            print(f"    Echec: {r2.text[:300]}")
         return []
 
     # Substituer les variables dans le SQL recupere
