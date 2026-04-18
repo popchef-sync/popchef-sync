@@ -10,38 +10,29 @@ METABASE_PASSWORD = os.environ["METABASE_PASSWORD"].strip()
 SUPABASE_URL = os.environ["SUPABASE_URL"].strip()
 SUPABASE_KEY = os.environ["SUPABASE_KEY"].strip()
 
-# ─────────────────────────────────────────────────────────
 # FIRST_RUN = True  → importe TOUT depuis IMPORT_FROM
-# FIRST_RUN = False → met à jour mois précédent + mois en cours
-# ─────────────────────────────────────────────────────────
+# FIRST_RUN = False → met a jour mois precedent + mois en cours
 FIRST_RUN = False
 IMPORT_FROM = date(2025, 1, 1)
-
 TODAY = date.today()
 
 FRENCH_MONTHS = {
-    "janvier": 1, "février": 2, "mars": 3, "avril": 4,
-    "mai": 5, "juin": 6, "juillet": 7, "août": 8,
-    "septembre": 9, "octobre": 10, "novembre": 11, "décembre": 12
+    "janvier": 1, "fevrier": 2, "mars": 3, "avril": 4,
+    "mai": 5, "juin": 6, "juillet": 7, "aout": 8,
+    "septembre": 9, "octobre": 10, "novembre": 11, "decembre": 12,
+    "f\xe9vrier": 2, "ao\xfbt": 8, "d\xe9cembre": 12
 }
 FRENCH_DAYS = ["lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi", "dimanche"]
-
-# ─── DATES ────────────────────────────────────────────────
 
 def month_chunks(start, end):
     chunks = []
     s = date(start.year, start.month, 1)
     while s <= end:
-        if s.month == 12:
-            e = date(s.year + 1, 1, 1)
-        else:
-            e = date(s.year, s.month + 1, 1)
+        e = date(s.year + 1, 1, 1) if s.month == 12 else date(s.year, s.month + 1, 1)
         e = min(e - timedelta(days=1), end)
         chunks.append((s, e))
         s = e + timedelta(days=1)
     return chunks
-
-# ─── PARSE ────────────────────────────────────────────────
 
 def parse_french_date(s):
     if not s: return None
@@ -85,19 +76,17 @@ def french_day(dt):
 
 def category2(product_name, category):
     name = (product_name or "").lower()
-    if any(x in name for x in ["cookie", "yaourt brassé", "mousse au chocolat"]):
+    if any(x in name for x in ["cookie", "yaourt brass\xe9", "mousse au chocolat"]):
         return "Permanent"
     return category or ""
 
 def epd_flag(cat2):
     return "EPD" if cat2 in ["Starter", "Snacking", "Dish", "Dessert"] else ""
 
-# ─── SUPABASE ─────────────────────────────────────────────
-
 def supa_headers():
     return {
         "apikey": SUPABASE_KEY,
-        "Authorization": f"Bearer {SUPABASE_KEY}",
+        "Authorization": "Bearer " + SUPABASE_KEY,
         "Content-Type": "application/json",
         "Prefer": "return=minimal"
     }
@@ -109,13 +98,13 @@ def delete_month(table, date_col, year, month):
         end_d = date(year, month + 1, 1)
     start_d = date(year, month, 1)
     requests.delete(
-        f"{SUPABASE_URL}/rest/v1/{table}?{date_col}=gte.{start_d}&{date_col}=lt.{end_d}",
+        SUPABASE_URL + "/rest/v1/" + table + "?" + date_col + "=gte." + str(start_d) + "&" + date_col + "=lt." + str(end_d),
         headers=supa_headers()
     )
 
 def truncate_table(table):
-    requests.delete(f"{SUPABASE_URL}/rest/v1/{table}?id=gte.0", headers=supa_headers())
-    print(f"  🗑️  {table} vidée")
+    requests.delete(SUPABASE_URL + "/rest/v1/" + table + "?id=gte.0", headers=supa_headers())
+    print("  Table " + table + " videe")
 
 def insert(table, rows):
     if not rows: return 0
@@ -123,294 +112,191 @@ def insert(table, rows):
     total = 0
     for i in range(0, len(rows), batch_size):
         batch = rows[i:i + batch_size]
-        r = requests.post(f"{SUPABASE_URL}/rest/v1/{table}", headers=supa_headers(), json=batch)
+        r = requests.post(SUPABASE_URL + "/rest/v1/" + table, headers=supa_headers(), json=batch)
         if r.status_code not in [200, 201]:
-            print(f"    ❌ Erreur insert {table}: {r.status_code} {r.text[:150]}")
+            print("    Erreur insert " + table + ": " + str(r.status_code) + " " + r.text[:150])
             return total
         total += len(batch)
     return total
 
 def log_import(data_type, year, month, row_count, status="success"):
     requests.post(
-        f"{SUPABASE_URL}/rest/v1/import_logs",
+        SUPABASE_URL + "/rest/v1/import_logs",
         headers=supa_headers(),
-        json=[{
-            "data_type": data_type, "year": year, "month": month,
-            "imported_at": datetime.utcnow().isoformat(),
-            "row_count": row_count, "status": status
-        }]
+        json=[{"data_type": data_type, "year": year, "month": month,
+               "imported_at": datetime.utcnow().isoformat(),
+               "row_count": row_count, "status": status}]
     )
 
 def already_imported(data_type, year, month):
     if FIRST_RUN: return False
     r = requests.get(
-        f"{SUPABASE_URL}/rest/v1/import_logs?data_type=eq.{data_type}&year=eq.{year}&month=eq.{month}&status=eq.success&limit=1",
+        SUPABASE_URL + "/rest/v1/import_logs?data_type=eq." + data_type + "&year=eq." + str(year) + "&month=eq." + str(month) + "&status=eq.success&limit=1",
         headers=supa_headers()
     )
     try: return len(r.json()) > 0
     except: return False
 
-# ─── METABASE ─────────────────────────────────────────────
-
 def metabase_token():
-    print("🔐 Connexion à Metabase...")
+    print("Connexion a Metabase...")
     r = requests.post(
-        f"{METABASE_URL}/api/session",
+        METABASE_URL + "/api/session",
         json={"username": METABASE_EMAIL, "password": METABASE_PASSWORD},
         timeout=30
     )
     r.raise_for_status()
-    print("  ✅ Connecté\n")
+    print("  Connecte")
     return r.json()["id"]
 
 def fetch_question(token, question_id, params):
     headers = {"X-Metabase-Session": token, "Content-Type": "application/json"}
     r = requests.post(
-        f"{METABASE_URL}/api/card/{question_id}/query/json",
+        METABASE_URL + "/api/card/" + str(question_id) + "/query/json",
         headers=headers,
         json={"parameters": params},
         timeout=300
     )
     if r.status_code != 200:
-        print(f"    ❌ Erreur Metabase {question_id}: {r.status_code} {r.text[:300]}")
+        print("    Erreur Metabase " + str(question_id) + ": " + str(r.status_code) + " " + r.text[:300])
         return []
     try:
         data = r.json()
         if isinstance(data, list): return data
-        print(f"    ❌ Réponse inattendue: {str(data)[:600]}")
+        print("    Reponse inattendue: " + str(data)[:400])
         return []
-    except json.JSONDecodeError:
+    except Exception:
         try:
             last = r.text.rfind('},')
             if last > 0:
                 data = json.loads(r.text[:last + 1] + ']')
-                print(f"    ⚠️  JSON partiel: {len(data)} lignes")
+                print("    JSON partiel: " + str(len(data)) + " lignes")
                 return data
-        except: pass
+        except Exception:
+            pass
         return []
 
-def fetch_stock(token, question_id, heure, start, end):
+def fetch_stock(token, heure, start, end):
     """
-    La question 1682 est en format MLv2 (stages) dans Metabase.
-    On recupere le SQL natif via l'API interne puis on execute
-    directement avec les valeurs substituees.
+    Execute directement le SQL du stock via /api/dataset/json
+    avec les valeurs de date substituees directement dans le SQL.
+    Le SQL est copie exactement depuis la question Metabase 1682.
     """
     headers = {"X-Metabase-Session": token, "Content-Type": "application/json"}
 
-    # Recuperer la carte complete avec son SQL
-    r = requests.get(
-        f"{METABASE_URL}/api/card/{question_id}",
-        headers=headers,
-        timeout=30
+    sql = (
+        "WITH date_range AS (\n"
+        "    SELECT \n"
+        "        generate_series(\n"
+        "            '" + str(start) + "'::date,\n"
+        "            '" + str(end) + "'::date,\n"
+        "            interval '1 day'\n"
+        "        )::date AS jour\n"
+        "),\n"
+        "snapshots AS (\n"
+        "    SELECT\n"
+        "        date_range.jour,\n"
+        "        (date_range.jour::timestamp + make_interval(\n"
+        "            hours => split_part('" + heure + "', ':', 1)::int,\n"
+        "            mins  => split_part('" + heure + "', ':', 2)::int\n"
+        "        )) AS instant_T\n"
+        "    FROM date_range\n"
+        ")\n"
+        "SELECT\n"
+        "    canteen_locations.\"name\" AS \"Nom de l'emplacement\",\n"
+        "    CASE \n"
+        "        WHEN products.\"subCategory\" IS NOT NULL THEN products.\"subCategory\"\n"
+        "        ELSE products.\"category\"\n"
+        "    END AS \"Cat\\u00e9gorie du produit\",\n"
+        "    products.\"name\" AS \"Nom du produit\",\n"
+        "    snapshots.instant_T,\n"
+        "    COUNT(*) AS \"nombre de produit\",\n"
+        "    openit_fridge_products.\"expiresAt\" AS dlc\n"
+        "FROM snapshots\n"
+        "LEFT JOIN openit_fridge_products\n"
+        "    ON openit_fridge_products.\"inputDate\" <= snapshots.instant_T\n"
+        "    AND (openit_fridge_products.\"outputDate\" > snapshots.instant_T \n"
+        "         OR openit_fridge_products.\"outputDate\" IS NULL)\n"
+        "LEFT JOIN products\n"
+        "    ON products.id = openit_fridge_products.\"productId\"\n"
+        "LEFT JOIN canteen_fridges\n"
+        "    ON canteen_fridges.id = openit_fridge_products.\"canteenFridgeId\"\n"
+        "LEFT JOIN canteen_locations\n"
+        "    ON canteen_locations.id = canteen_fridges.\"canteenLocationId\"\n"
+        "WHERE canteen_fridges.\"isActive\" = true\n"
+        "GROUP BY\n"
+        "    snapshots.instant_T,\n"
+        "    canteen_locations.\"name\",\n"
+        "    \"Cat\\u00e9gorie du produit\",\n"
+        "    products.\"name\",\n"
+        "    dlc\n"
+        "ORDER BY\n"
+        "    snapshots.instant_T ASC,\n"
+        "    canteen_locations.\"name\",\n"
+        "    \"Cat\\u00e9gorie du produit\",\n"
+        "    products.\"name\",\n"
+        "    dlc"
     )
-    if r.status_code != 200:
-        print(f"    Erreur recup carte: {r.status_code}")
-        return []
-
-    card = r.json()
-    # Si la reponse est une string, on passe directement au SQL direct
-    if not isinstance(card, dict):
-        card = {}
-    dq = card.get("dataset_query", {})
-    if not isinstance(dq, dict):
-        dq = {}
-
-    # Chercher le SQL dans le format MLv2 (stages)
-    sql = ""
-    stages = dq.get("stages", [])
-    for stage in stages:
-        q = stage.get("native", {}).get("query", "")
-        if q:
-            sql = q
-            break
-
-    # Fallback format classique
-    if not sql:
-        sql = dq.get("native", {}).get("query", "")
-
-    database_id = dq.get("database", 2)
-
-    if not sql:
-        # Derniere tentative: endpoint /api/card/{id}/query/json sans parametres
-        # puis on recupere le SQL depuis les metadonnees
-        print(f"    SQL non trouve, tentative via dataset...")
-        # Utiliser l'endpoint dataset avec parametres au format MLv2
-        payload = {
-            "database": database_id,
-            "type": "native",
-            "native": {
-                "query": f"""
-WITH date_range AS (
-    SELECT generate_series(
-        '{start}'::date,
-        '{end}'::date,
-        interval '1 day'
-    )::date AS jour
-),
-snapshots AS (
-    SELECT
-        date_range.jour,
-        (date_range.jour::timestamp + make_interval(
-            hours => split_part('{heure}', ':', 1)::int,
-            mins  => split_part('{heure}', ':', 2)::int
-        )) AS instant_T
-    FROM date_range
-)
-SELECT
-    canteen_locations."name" AS "Nom de l'emplacement",
-    CASE
-        WHEN products."subCategory" IS NOT NULL THEN products."subCategory"
-        ELSE products."category"
-    END AS "Catégorie du produit",
-    products."name" AS "Nom du produit",
-    snapshots.instant_T,
-    COUNT(*) AS "nombre de produit",
-    openit_fridge_products."expiresAt" AS dlc
-FROM snapshots
-LEFT JOIN openit_fridge_products
-    ON openit_fridge_products."inputDate" <= snapshots.instant_T
-    AND (openit_fridge_products."outputDate" > snapshots.instant_T
-         OR openit_fridge_products."outputDate" IS NULL)
-LEFT JOIN products ON products.id = openit_fridge_products."productId"
-LEFT JOIN canteen_fridges ON canteen_fridges.id = openit_fridge_products."canteenFridgeId"
-LEFT JOIN canteen_locations ON canteen_locations.id = canteen_fridges."canteenLocationId"
-WHERE canteen_fridges."isActive" = true
-GROUP BY
-    snapshots.instant_T,
-    canteen_locations."name",
-    "Catégorie du produit",
-    products."name",
-    dlc
-ORDER BY
-    snapshots.instant_T ASC,
-    canteen_locations."name",
-    "Catégorie du produit",
-    products."name",
-    dlc
-"""
-            },
-            "parameters": []
-        }
-        r2 = requests.post(
-            f"{METABASE_URL}/api/dataset/json",
-            headers=headers,
-            json=payload,
-            timeout=300
-        )
-        print(f"    SQL direct status: {r2.status_code}")
-        print(f"    SQL direct status: {r2.status_code}")
-        if r2.status_code == 200:
-            try:
-                data = r2.json()
-                print(f"    Reponse type: {type(data).__name__}, debut: {str(data)[:300]}")
-                # /api/dataset/json retourne une liste de dicts normalement
-                if isinstance(data, list) and len(data) > 0:
-                    # Verifier si c'est une liste de dicts ou de listes
-                    first = data[0]
-                    if isinstance(first, dict):
-                        print(f"    OK: {len(data)} lignes (dicts)")
-                        return data
-                    elif isinstance(first, list):
-                        # Format liste de listes - le premier element est les headers
-                        print(f"    Format liste de listes, conversion...")
-                        headers = data[0]
-                        rows_out = []
-                        for row in data[1:]:
-                            rows_out.append(dict(zip(headers, row)))
-                        print(f"    OK: {len(rows_out)} lignes converties")
-                        return rows_out
-                elif isinstance(data, dict):
-                    # Peut etre format {data: {rows: [...], cols: [...]}}
-                    rows = data.get("data", {}).get("rows", [])
-                    cols = data.get("data", {}).get("cols", [])
-                    if rows and cols:
-                        col_names = [c.get("display_name", c.get("name", f"col{i}")) for i,c in enumerate(cols)]
-                        rows_out = [dict(zip(col_names, row)) for row in rows]
-                        print(f"    OK via data.rows: {len(rows_out)} lignes")
-                        return rows_out
-                print(f"    Reponse inattendue")
-            except Exception as ex:
-                print(f"    Exception: {ex}")
-                print(f"    Texte brut: {r2.text[:400]}")
-        else:
-            print(f"    Echec: {r2.text[:300]}")
-        return []
-
-    # Substituer les variables dans le SQL recupere
-    sql = sql.replace("{{ DATE_RANGE.start }}", f"'{start}'::date")
-    sql = sql.replace("{{ DATE_RANGE.end }}", f"'{end}'::date")
-    sql = sql.replace("{{DATE_RANGE.start}}", f"'{start}'::date")
-    sql = sql.replace("{{DATE_RANGE.end}}", f"'{end}'::date")
-    sql = sql.replace("{{ HEURE }}", f"'{heure}'")
-    sql = sql.replace("{{HEURE}}", f"'{heure}'")
-    sql = sql.replace("AND {{ EMPLACEMENT }}", "AND 1=1")
-    sql = sql.replace("AND {{EMPLACEMENT}}", "AND 1=1")
 
     payload = {
-        "database": database_id,
+        "database": 2,
         "type": "native",
         "native": {"query": sql},
         "parameters": []
     }
-    r3 = requests.post(
-        f"{METABASE_URL}/api/dataset/json",
+
+    r = requests.post(
+        METABASE_URL + "/api/dataset/json",
         headers=headers,
         json=payload,
         timeout=300
     )
-    if r3.status_code != 200:
-        print(f"    Erreur dataset: {r3.status_code} {r3.text[:200]}")
+
+    print("    Stock API status: " + str(r.status_code))
+
+    if r.status_code != 200:
+        print("    Erreur: " + r.text[:300])
         return []
+
     try:
-        data = r3.json()
+        data = r.json()
         if isinstance(data, list):
+            if len(data) > 0 and isinstance(data[0], dict):
+                return data
+            elif len(data) > 0 and isinstance(data[0], list):
+                # Liste de listes - convertir en dicts
+                headers_row = data[0]
+                return [dict(zip(headers_row, row)) for row in data[1:]]
             return data
-        print(f"    Reponse inattendue: {str(data)[:300]}")
+        elif isinstance(data, dict):
+            # Format {data: {rows, cols}}
+            inner = data.get("data", {})
+            rows = inner.get("rows", [])
+            cols = inner.get("cols", [])
+            if rows and cols:
+                col_names = [c.get("display_name") or c.get("name", "col" + str(i)) for i, c in enumerate(cols)]
+                return [dict(zip(col_names, row)) for row in rows]
+            print("    Reponse dict inattendue: " + str(data)[:300])
+            return []
+        else:
+            print("    Type inattendu: " + str(type(data)) + " val: " + str(data)[:200])
+            return []
+    except Exception as ex:
+        print("    Exception parsing: " + str(ex))
+        print("    Texte brut: " + r.text[:400])
         return []
-    except Exception:
-        return []
-
-
-# ─── PARAMÈTRES ───────────────────────────────────────────
 
 def p_range(tag, s, e):
-    """Paramètre date/range pour les questions avec {{ Date }} ou {{ DATE }}"""
-    return {"type": "date/range", "target": ["dimension", ["template-tag", tag]], "value": f"{s}~{e}"}
-
-def p_stock(heure, start, end):
-    """
-    Question 1682 — DATE_RANGE.start et DATE_RANGE.end
-    Type dans Metabase: Date → target = dimension (field filter de type date)
-    """
-    return [
-        {
-            "type": "date/single",
-            "target": ["dimension", ["template-tag", "DATE_RANGE.start"]],
-            "value": str(start)
-        },
-        {
-            "type": "date/single",
-            "target": ["dimension", ["template-tag", "DATE_RANGE.end"]],
-            "value": str(end)
-        },
-        {
-            "type": "category",
-            "target": ["variable", ["template-tag", "HEURE"]],
-            "value": heure
-        }
-    ]
-
-# ─── TRANSFORMATIONS ──────────────────────────────────────
+    return {"type": "date/range", "target": ["dimension", ["template-tag", tag]], "value": str(s) + "~" + str(e)}
 
 def t_dispatched(rows, s, e):
     out = []
     for r in rows:
         dt = parse_french_date(r.get("Date") or r.get("date"))
         if not dt or not (s <= dt.date() <= e): continue
-        cat = r.get("catégorie") or r.get("categorie") or ""
+        cat = r.get("cat\xe9gorie") or r.get("categorie") or ""
         pname = r.get("nom du produit") or ""
         cat2 = category2(pname, cat)
-        qty = int(parse_number(r.get("Quantités dispatchées") or 0) or 0)
+        qty = int(parse_number(r.get("Quantit\xe9s dispatchées") or 0) or 0)
         cost = parse_number(r.get("PA Produit"))
         out.append({
             "date": dt.date().isoformat(), "year": dt.year, "week_number": iso_week(dt),
@@ -426,14 +312,14 @@ def t_consumed(rows, s, e):
     for r in rows:
         dt = parse_french_date(r.get("Date") or r.get("date"))
         if not dt or not (s <= dt.date() <= e): continue
-        cat = r.get("catégorie") or r.get("categorie") or ""
+        cat = r.get("cat\xe9gorie") or r.get("categorie") or ""
         pname = r.get("Nom du produit") or r.get("nom du produit") or ""
         cat2 = category2(pname, cat)
         qty = int(parse_number(r.get("Nombre de consommations") or 0) or 0)
         cost = parse_number(r.get("PA Produit"))
         out.append({
             "date": dt.date().isoformat(), "year": dt.year,
-            "week_number": int(parse_number(r.get("n° semaine") or iso_week(dt) or 0) or 0),
+            "week_number": int(parse_number(r.get("n\xb0 semaine") or iso_week(dt) or 0) or 0),
             "site": r.get("Emplacement") or r.get("emplacement"),
             "product_name": pname, "category": cat,
             "protein_type": r.get("Type") or r.get("type"),
@@ -449,10 +335,10 @@ def t_delivered(rows, s, e):
         dt = parse_french_date(r.get("date de livraison"))
         if not dt or not (s <= dt.date() <= e): continue
         dlc = parse_french_date(r.get("DLC") or r.get("dlc"))
-        cat = r.get("catégorie du produit") or ""
+        cat = r.get("cat\xe9gorie du produit") or ""
         pname = r.get("nom du produit") or ""
         cat2 = category2(pname, cat)
-        qty = int(parse_number(r.get("nombre de produit livré détecté") or 0) or 0)
+        qty = int(parse_number(r.get("nombre de produit livr\xe9 d\xe9tect\xe9") or 0) or 0)
         cost = parse_number(r.get("PA Produit"))
         out.append({
             "delivery_date": dt.date().isoformat(), "year": dt.year, "week_number": iso_week(dt),
@@ -470,10 +356,12 @@ def t_delivered(rows, s, e):
 def t_stock(rows, s, e):
     out = []
     for r in rows:
+        if not isinstance(r, dict):
+            continue
         ts = parse_french_date(r.get("instant_T") or r.get("instant_t"))
         if not ts or not (s <= ts.date() <= e): continue
         dlc = parse_french_date(r.get("dlc") or r.get("DLC"))
-        cat = r.get("Catégorie du produit") or ""
+        cat = r.get("Cat\xe9gorie du produit") or ""
         pname = r.get("Nom du produit") or ""
         cat2 = category2(pname, cat)
         qty = int(parse_number(r.get("nombre de produit") or 0) or 0)
@@ -493,147 +381,133 @@ def t_proofs(rows, s, e):
         dt = parse_french_date(r.get("Date") or r.get("date"))
         if not dt or not (s <= dt.date() <= e): continue
         site = r.get("Emplacement") or r.get("emplacement")
-        key = f"{dt.date()}_{site}"
+        key = str(dt.date()) + "_" + str(site)
         if key in seen: continue
         seen.add(key)
         out.append({
             "date": dt.date().isoformat(), "year": dt.year, "week_number": iso_week(dt),
             "site": site,
-            "preparation_url": r.get("Préparation") or r.get("preparation"),
+            "preparation_url": r.get("Pr\xe9paration") or r.get("preparation"),
             "delivery_url": r.get("Livraison") or r.get("livraison"),
             "day_name": french_day(dt),
         })
     return out
 
-# ─── SYNC PAR MOIS ────────────────────────────────────────
-
 def sync_month(token, year, month, start, end):
-    print(f"\n  📅 {year}-{month:02d} ({start} → {end})")
+    print("  " + str(year) + "-" + str(month).zfill(2) + " (" + str(start) + " -> " + str(end) + ")")
 
-    # Dispatché
     if not already_imported("dispatched", year, month):
         try:
             rows = fetch_question(token, 1684, [p_range("Date", start, end)])
             data = t_dispatched(rows, start, end)
             delete_month("dispatched", "date", year, month)
             n = insert("dispatched", data)
-            print(f"    📦 Dispatché: {n} lignes")
+            print("    Dispatche: " + str(n) + " lignes")
             log_import("dispatched", year, month, n)
         except Exception as ex:
-            print(f"    ❌ Dispatché: {ex}")
+            print("    ERREUR Dispatche: " + str(ex))
             log_import("dispatched", year, month, 0, "error")
     else:
-        print(f"    📦 Dispatché: déjà importé ✓")
+        print("    Dispatche: deja importe")
 
-    # Consommé
     if not already_imported("consumed", year, month):
         try:
             rows = fetch_question(token, 1683, [p_range("DATE", start, end)])
             data = t_consumed(rows, start, end)
             delete_month("consumed", "date", year, month)
             n = insert("consumed", data)
-            print(f"    🍽️  Consommé: {n} lignes")
+            print("    Consomme: " + str(n) + " lignes")
             log_import("consumed", year, month, n)
         except Exception as ex:
-            print(f"    ❌ Consommé: {ex}")
+            print("    ERREUR Consomme: " + str(ex))
             log_import("consumed", year, month, 0, "error")
     else:
-        print(f"    🍽️  Consommé: déjà importé ✓")
+        print("    Consomme: deja importe")
 
-    # Livré
     if not already_imported("delivered", year, month):
         try:
             rows = fetch_question(token, 1687, [p_range("DATE", start, end)])
             data = t_delivered(rows, start, end)
             delete_month("delivered", "delivery_date", year, month)
             n = insert("delivered", data)
-            print(f"    🚚 Livré: {n} lignes")
+            print("    Livre: " + str(n) + " lignes")
             log_import("delivered", year, month, n)
         except Exception as ex:
-            print(f"    ❌ Livré: {ex}")
+            print("    ERREUR Livre: " + str(ex))
             log_import("delivered", year, month, 0, "error")
     else:
-        print(f"    🚚 Livré: déjà importé ✓")
+        print("    Livre: deja importe")
 
-    # Stock 12h30 — par semaine pour éviter les timeouts
-    # La question 1682 génère une série de dates SQL, donc limiter à 1 mois max
     if not already_imported("stock_12h30", year, month):
         try:
-            rows = fetch_stock(token, 1682, "12:31", start, end)
+            rows = fetch_stock(token, "12:31", start, end)
             data = t_stock(rows, start, end)
             delete_month("stock_12h30", "timestamp", year, month)
             n = insert("stock_12h30", data)
-            print(f"    📊 Stock 12h30: {n} lignes")
+            print("    Stock 12h30: " + str(n) + " lignes")
             log_import("stock_12h30", year, month, n)
         except Exception as ex:
-            print(f"    ❌ Stock 12h30: {ex}")
+            print("    ERREUR Stock 12h30: " + str(ex))
             log_import("stock_12h30", year, month, 0, "error")
     else:
-        print(f"    📊 Stock 12h30: déjà importé ✓")
+        print("    Stock 12h30: deja importe")
 
-    # Stock 6h
     if not already_imported("stock_6h", year, month):
         try:
-            rows = fetch_stock(token, 1682, "06:01", start, end)
+            rows = fetch_stock(token, "06:01", start, end)
             data = t_stock(rows, start, end)
             delete_month("stock_6h", "timestamp", year, month)
             n = insert("stock_6h", data)
-            print(f"    📊 Stock 6h: {n} lignes")
+            print("    Stock 6h: " + str(n) + " lignes")
             log_import("stock_6h", year, month, n)
         except Exception as ex:
-            print(f"    ❌ Stock 6h: {ex}")
+            print("    ERREUR Stock 6h: " + str(ex))
             log_import("stock_6h", year, month, 0, "error")
     else:
-        print(f"    📊 Stock 6h: déjà importé ✓")
+        print("    Stock 6h: deja importe")
 
-    # Preuves
     if not already_imported("delivery_proofs", year, month):
         try:
             rows = fetch_question(token, 1673, [p_range("Date", start, end)])
             data = t_proofs(rows, start, end)
             delete_month("delivery_proofs", "date", year, month)
             n = insert("delivery_proofs", data)
-            print(f"    📸 Preuves: {n} lignes")
+            print("    Preuves: " + str(n) + " lignes")
             log_import("delivery_proofs", year, month, n)
         except Exception as ex:
-            print(f"    ❌ Preuves: {ex}")
+            print("    ERREUR Preuves: " + str(ex))
             log_import("delivery_proofs", year, month, 0, "error")
     else:
-        print(f"    📸 Preuves: déjà importé ✓")
-
-# ─── MAIN ─────────────────────────────────────────────────
+        print("    Preuves: deja importe")
 
 def main():
-    print("🚀 Démarrage synchronisation Metabase → Supabase")
-    print(f"   {datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')} UTC")
-    print(f"   Mode: {'PREMIER IMPORT COMPLET' if FIRST_RUN else 'MISE À JOUR AUTO'}\n")
+    print("Demarrage synchronisation Metabase -> Supabase")
+    print(datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S") + " UTC")
+    print("Mode: " + ("PREMIER IMPORT" if FIRST_RUN else "MISE A JOUR AUTO"))
 
     token = metabase_token()
 
     if FIRST_RUN:
-        # Vider toutes les tables
-        print("🗑️  Vidage des tables...")
-        for t in ["dispatched","delivered","consumed","stock_12h30","stock_6h","delivery_proofs","import_logs"]:
+        print("Vidage des tables...")
+        for t in ["dispatched", "delivered", "consumed", "stock_12h30", "stock_6h", "delivery_proofs", "import_logs"]:
             truncate_table(t)
         chunks = month_chunks(IMPORT_FROM, TODAY)
-        print(f"\n📋 {len(chunks)} mois à importer ({IMPORT_FROM} → {TODAY})")
+        print(str(len(chunks)) + " mois a importer")
     else:
-        # Seulement mois précédent + mois en cours
         if TODAY.month == 1:
             prev = date(TODAY.year - 1, 12, 1)
         else:
             prev = date(TODAY.year, TODAY.month - 1, 1)
         curr = date(TODAY.year, TODAY.month, 1)
         prev_end = curr - timedelta(days=1)
-        curr_end = TODAY
-        chunks = [(prev, prev_end), (curr, curr_end)]
-        print(f"📋 Mise à jour: {len(chunks)} mois")
+        chunks = [(prev, prev_end), (curr, TODAY)]
+        print("Mise a jour: 2 mois")
 
     for (start, end) in chunks:
         sync_month(token, start.year, start.month, start, end)
 
-    print(f"\n✅ Synchronisation terminée !")
-    print(f"   {datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')} UTC")
+    print("Synchronisation terminee!")
+    print(datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S") + " UTC")
 
 if __name__ == "__main__":
     main()
