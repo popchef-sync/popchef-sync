@@ -304,8 +304,15 @@ def fetch_stock(token, heure, start, end):
             data = r2.json()
             if isinstance(data, list) and data:
                 if isinstance(data[0], dict):
+                    # Afficher les cles pour debug
+                    print("    Cles retournees: " + str(list(data[0].keys())))
                     return data
-            print("    Reponse API2: " + str(data)[:300])
+                elif isinstance(data[0], list):
+                    # Liste de listes - 1ere ligne = headers
+                    headers_row = data[0]
+                    print("    Headers retournes: " + str(headers_row))
+                    return [dict(zip(headers_row, row)) for row in data[1:]]
+            print("    Reponse API2 vide ou inattendue: " + str(type(data)))
         except Exception as ex2:
             print("    Exception API2: " + str(ex2))
     else:
@@ -386,16 +393,39 @@ def t_stock(rows, s, e):
     for r in rows:
         if not isinstance(r, dict):
             continue
-        ts = parse_french_date(r.get("instant_T") or r.get("instant_t"))
+        # Accepter tous les formats de noms de colonnes possibles
+        ts_raw = (r.get("instant_T") or r.get("instant_t") or
+                  r.get("Instant T") or r.get("instant T"))
+        ts = parse_french_date(ts_raw)
         if not ts or not (s <= ts.date() <= e): continue
-        dlc = parse_french_date(r.get("dlc") or r.get("DLC"))
-        cat = r.get("Cat\xe9gorie du produit") or ""
-        pname = r.get("Nom du produit") or ""
+        
+        dlc_raw = (r.get("dlc") or r.get("DLC") or r.get("Dlc"))
+        dlc = parse_french_date(dlc_raw)
+        
+        # Noms de colonnes possibles pour la categorie
+        cat = (r.get("Catégorie du produit") or
+               r.get("Categorie du produit") or
+               r.get("catégorie du produit") or
+               r.get("product_category") or "")
+        
+        pname = (r.get("Nom du produit") or
+                 r.get("nom du produit") or
+                 r.get("product_name") or "")
+        
+        site = (r.get("Nom de l'emplacement") or
+                r.get("Nom de l'emplacement") or
+                r.get("site") or "")
+        
+        qty_raw = (r.get("nombre de produit") or
+                   r.get("Nombre de produit") or
+                   r.get("quantity") or 0)
+        qty = int(parse_number(qty_raw) or 0)
+        
         cat2 = category2(pname, cat)
-        qty = int(parse_number(r.get("nombre de produit") or 0) or 0)
+        
         out.append({
             "timestamp": ts.isoformat(), "year": ts.year, "week_number": iso_week(ts),
-            "site": r.get("Nom de l'emplacement"),
+            "site": site,
             "category": cat, "product_name": pname, "quantity": qty,
             "dlc_date": dlc.date().isoformat() if dlc else None,
             "category2": cat2, "epd": epd_flag(cat2),
