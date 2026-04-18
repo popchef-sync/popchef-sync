@@ -12,7 +12,7 @@ SUPABASE_KEY = os.environ["SUPABASE_KEY"].strip()
 
 # FIRST_RUN = True  → importe TOUT depuis IMPORT_FROM
 # FIRST_RUN = False → met a jour mois precedent + mois en cours
-FIRST_RUN = False
+FIRST_RUN = True
 IMPORT_FROM = date(2025, 1, 1)
 TODAY = date.today()
 
