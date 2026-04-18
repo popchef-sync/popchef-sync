@@ -208,7 +208,12 @@ def fetch_stock(token, question_id, heure, start, end):
         return []
 
     card = r.json()
+    # Si la reponse est une string, on passe directement au SQL direct
+    if not isinstance(card, dict):
+        card = {}
     dq = card.get("dataset_query", {})
+    if not isinstance(dq, dict):
+        dq = {}
 
     # Chercher le SQL dans le format MLv2 (stages)
     sql = ""
@@ -292,15 +297,25 @@ ORDER BY
             json=payload,
             timeout=300
         )
+        print(f"    SQL direct status: {r2.status_code}")
         if r2.status_code == 200:
             try:
                 data = r2.json()
                 if isinstance(data, list):
                     print(f"    OK via SQL direct: {len(data)} lignes")
                     return data
-            except Exception:
-                pass
-        print(f"    Echec SQL direct: {r2.status_code} {r2.text[:200]}")
+                elif isinstance(data, str):
+                    # Parfois Metabase retourne du JSON en string
+                    import json as json_mod
+                    data2 = json_mod.loads(data)
+                    if isinstance(data2, list):
+                        return data2
+                print(f"    Reponse type: {type(data)}, debut: {str(data)[:200]}")
+            except Exception as ex:
+                print(f"    Exception parsing: {ex}")
+                print(f"    Texte brut: {r2.text[:300]}")
+        else:
+            print(f"    Echec SQL direct: {r2.status_code} {r2.text[:300]}")
         return []
 
     # Substituer les variables dans le SQL recupere
