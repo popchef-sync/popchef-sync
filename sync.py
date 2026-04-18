@@ -237,53 +237,81 @@ def fetch_stock(token, heure, start, end):
         "    dlc"
     )
 
+    # Format correct pour /api/dataset
     payload = {
         "database": 2,
         "type": "native",
-        "native": {"query": sql},
-        "parameters": []
+        "native": {
+            "query": sql,
+            "template-tags": {}
+        },
+        "middleware": {
+            "js-int-to-string?": True,
+            "add-default-userland-constraints?": True
+        }
     }
 
+    # Essai 1: endpoint /api/dataset (retourne JSON avec rows/cols)
     r = requests.post(
-        METABASE_URL + "/api/dataset/json",
+        METABASE_URL + "/api/dataset",
         headers=headers,
         json=payload,
         timeout=300
     )
-
+    
     print("    Stock API status: " + str(r.status_code))
+    
+    if r.status_code == 200:
+        try:
+            result = r.json()
+            data_section = result.get("data", {})
+            rows = data_section.get("rows", [])
+            cols = data_section.get("cols", [])
+            if rows is not None and cols:
+                col_names = []
+                for c in cols:
+                    name = c.get("display_name") or c.get("name") or ""
+                    col_names.append(name)
+                converted = [dict(zip(col_names, row)) for row in rows]
+                print("    OK via /api/dataset: " + str(len(converted)) + " lignes")
+                return converted
+            print("    Reponse dataset: " + str(result)[:300])
+        except Exception as ex:
+            print("    Exception: " + str(ex))
+    else:
+        print("    Erreur /api/dataset: " + r.text[:300])
 
-    if r.status_code != 200:
-        print("    Erreur: " + r.text[:300])
-        return []
+    # Essai 2: endpoint /api/dataset/json avec format query wrappé
+    payload2 = {
+        "query": {
+            "database": 2,
+            "type": "native",
+            "native": {
+                "query": sql,
+                "template-tags": {}
+            }
+        }
+    }
+    r2 = requests.post(
+        METABASE_URL + "/api/dataset/json",
+        headers=headers,
+        json=payload2,
+        timeout=300
+    )
+    print("    Stock API2 status: " + str(r2.status_code))
+    if r2.status_code == 200:
+        try:
+            data = r2.json()
+            if isinstance(data, list) and data:
+                if isinstance(data[0], dict):
+                    return data
+            print("    Reponse API2: " + str(data)[:300])
+        except Exception as ex2:
+            print("    Exception API2: " + str(ex2))
+    else:
+        print("    Erreur API2: " + r2.text[:200])
 
-    try:
-        data = r.json()
-        if isinstance(data, list):
-            if len(data) > 0 and isinstance(data[0], dict):
-                return data
-            elif len(data) > 0 and isinstance(data[0], list):
-                # Liste de listes - convertir en dicts
-                headers_row = data[0]
-                return [dict(zip(headers_row, row)) for row in data[1:]]
-            return data
-        elif isinstance(data, dict):
-            # Format {data: {rows, cols}}
-            inner = data.get("data", {})
-            rows = inner.get("rows", [])
-            cols = inner.get("cols", [])
-            if rows and cols:
-                col_names = [c.get("display_name") or c.get("name", "col" + str(i)) for i, c in enumerate(cols)]
-                return [dict(zip(col_names, row)) for row in rows]
-            print("    Reponse dict inattendue: " + str(data)[:300])
-            return []
-        else:
-            print("    Type inattendu: " + str(type(data)) + " val: " + str(data)[:200])
-            return []
-    except Exception as ex:
-        print("    Exception parsing: " + str(ex))
-        print("    Texte brut: " + r.text[:400])
-        return []
+    return []
 
 def p_range(tag, s, e):
     return {"type": "date/range", "target": ["dimension", ["template-tag", tag]], "value": str(s) + "~" + str(e)}
