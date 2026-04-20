@@ -446,9 +446,35 @@ tbody tr:hover td:first-child{background:rgba(99,18,72,0.06);}
   }
 
   // ── FILTER ──
+  function calcCategory2(pname, category) {
+    var name = (pname || '').toLowerCase();
+    if (name.indexOf('cookie') > -1 || name.indexOf('yaourt brass') > -1 || name.indexOf('mousse au chocolat') > -1) {
+      return 'Permanent';
+    }
+    return category || '';
+  }
+
+  function calcEpd(cat2) {
+    return ['Starter','Snacking','Dish','Dessert'].indexOf(cat2) > -1 ? 'EPD' : '';
+  }
+
+  function enrichRow(r, siteField) {
+    // Si category2 ou epd sont vides, les recalculer
+    var pname = r.product_name || '';
+    var cat = r.category || r.product_category || '';
+    if (!r.category2 || r.category2 === '') {
+      r.category2 = calcCategory2(pname, cat);
+    }
+    if (!r.epd || r.epd === '') {
+      r.epd = calcEpd(r.category2);
+    }
+    return r;
+  }
+
   function filt(rows, site, cat, sf) {
     sf = sf || 'site';
     return rows.filter(function(r) {
+      enrichRow(r, sf);
       var sOk = site === 'all' || r[sf] === site;
       var cOk = cat === 'EPD' ? r.epd === 'EPD' : r.category2 === cat;
       return sOk && cOk;
