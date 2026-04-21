@@ -558,6 +558,8 @@ def sync_month(token, year, month, start, end):
         print("    Categories stock mises a jour")
     else:
         print("    Erreur update categories: " + str(r.status_code))
+        # Mettre à jour les catégories du stock
+    call_update_stock_categories()
 
 def main():
     print("Demarrage synchronisation Metabase -> Supabase")
