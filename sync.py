@@ -546,6 +546,18 @@ def sync_month(token, year, month, start, end):
             log_import("delivery_proofs", year, month, 0, "error")
     else:
         print("    Preuves: deja importe")
+        
+        def call_update_stock_categories():
+    """Appelle la fonction SQL pour mettre a jour les categories du stock"""
+    r = requests.post(
+        SUPABASE_URL + "/rest/v1/rpc/update_stock_categories",
+        headers=supa_headers(),
+        json={}
+    )
+    if r.status_code in [200, 204]:
+        print("    Categories stock mises a jour")
+    else:
+        print("    Erreur update categories: " + str(r.status_code))
 
 def main():
     print("Demarrage synchronisation Metabase -> Supabase")
