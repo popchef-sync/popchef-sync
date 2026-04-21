@@ -12,7 +12,7 @@ SUPABASE_KEY = os.environ["SUPABASE_KEY"].strip()
 
 # FIRST_RUN = True  → importe TOUT depuis IMPORT_FROM
 # FIRST_RUN = False → met a jour mois precedent + mois en cours
-FIRST_RUN = True
+FIRST_RUN = False
 IMPORT_FROM = date(2025, 1, 1)
 TODAY = date.today()
 
@@ -546,20 +546,22 @@ def sync_month(token, year, month, start, end):
             log_import("delivery_proofs", year, month, 0, "error")
     else:
         print("    Preuves: deja importe")
-        
-        def call_update_stock_categories():
-    """Appelle la fonction SQL pour mettre a jour les categories du stock"""
+
+    # Mettre a jour les categories du stock depuis delivered
+    call_update_stock_categories()
+
+
+def call_update_stock_categories():
     r = requests.post(
         SUPABASE_URL + "/rest/v1/rpc/update_stock_categories",
         headers=supa_headers(),
         json={}
     )
     if r.status_code in [200, 204]:
-        print("    Categories stock mises a jour")
+        print("    Categories stock mises a jour OK")
     else:
-        print("    Erreur update categories: " + str(r.status_code))
-        # Mettre à jour les catégories du stock
-    call_update_stock_categories()
+        print("    Erreur update categories: " + str(r.status_code) + " " + r.text[:100])
+
 
 def main():
     print("Demarrage synchronisation Metabase -> Supabase")
